@@ -1,0 +1,13 @@
+{
+	"name": "jshint-next",
+	"version": "0.0.1",
+
+	"dependencies": {
+		"esprima": "*"
+	},
+
+	"devDependencies": {
+		"coveraje": "*",
+		"vows": "*"
+	}
+}
