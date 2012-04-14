@@ -31,6 +31,10 @@ exports.testTree = function (test) {
 exports.testTokens = function (test) {
 	test.expect(1);
 
+	// The tokens.json file is a tree snapshot I got by using Esprima's
+	// online parser demo with the code from simple_file.js.
+	// * http://esprima.org/demo/parse.html
+
 	var code = fixtures.get("simple_file.js");
 	var tokens = JSON.parse(fixtures.get("tokens.json"));
 

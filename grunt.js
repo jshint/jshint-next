@@ -11,8 +11,12 @@ module.exports = function (grunt) {
 
 		jshint: {
 			options: {
+				"es5": true,
+				"node": true,
+				"globalstrict": true,
 				"strict": true,
-				"white":  true
+				"white":  true,
+				"smarttabs": true
 			}
 		}
 	});
