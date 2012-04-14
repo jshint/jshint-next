@@ -8,6 +8,8 @@
 
 	"devDependencies": {
 		"coveraje": "*",
-		"grunt": "*"
+		"grunt":    "*",
+		"nodeunit": "*",
+		"jshint":   "*"
 	}
 }

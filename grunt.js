@@ -6,7 +6,10 @@ module.exports = function (grunt) {
 		},
 
 		jshint: {
-			options: { "strict": true }
+			options: {
+				"strict": true,
+				"white":  true
+			}
 		}
 	});
 

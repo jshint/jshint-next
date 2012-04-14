@@ -12,8 +12,9 @@ This is a list of libraries and frameworks the JSHint core team
 agreed to use:
 
  * Parser: [Esprima](http://esprima.org/).
- * Tests: [Vows](http://vowsjs.org/) and
-   [Coveraje](https://github.com/coveraje/coveraje).
+ * Tasks: [Grunt](https://github.com/cowboy/grunt/).
+ * Tests: Nodeunit(https://github.com/caolan/nodeunit) and
+		[Coveraje](https://github.com/coveraje/coveraje).
 
 
 Discussion
