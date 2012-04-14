@@ -5,6 +5,10 @@ module.exports = function (grunt) {
 			all: [ "src/**/*.js" ]
 		},
 
+		test: {
+			all: [ "test/unit/**/*.js" ]
+		},
+
 		jshint: {
 			options: {
 				"strict": true,
@@ -13,5 +17,5 @@ module.exports = function (grunt) {
 		}
 	});
 
-	grunt.registerTask("default", "lint");
+	grunt.registerTask("default", "lint test");
 };
