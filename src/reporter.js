@@ -2,20 +2,28 @@
 
 var _ = require("underscore");
 
-var ERROR   = 1;
-var WARNING = 2;
+function Report(source) {
+	this.ERROR   = 1;
+	this.WARNING = 2;
 
-function Report() {
 	this.messages = {};
+	this.ranges = [];
+	this.source = source;
 }
 
 Report.prototype = {
+	lineFromRange: function (range) {
+		var lines = this.source.slice(0, range[0]).split("\n");
+		return lines.length || -1;
+	},
+
 	get errors() {
 		var ret = {};
+		var self = this;
 
-		_.each(this.messages, function (pool, line) {
+		_.each(self.messages, function (pool, line) {
 			var newPool = _.filter(pool, function (msg) {
-				return msg.type === ERROR;
+				return msg.type === self.ERROR;
 			});
 
 			if (newPool.length)
@@ -27,10 +35,11 @@ Report.prototype = {
 
 	get warnings() {
 		var ret = {};
+		var self = this;
 
-		_.each(this.messages, function (pool, line) {
+		_.each(self.messages, function (pool, line) {
 			var newPool = _.filter(pool, function (msg) {
-				return msg.type === WARNING;
+				return msg.type === self.WARNING;
 			});
 
 			if (newPool.length)
@@ -47,29 +56,29 @@ Report.prototype = {
 	},
 
 	addMessage: function (obj) {
-		if (!_.has(this.messages, obj.line))
-			this.messages[obj.line] = [];
-
-		this.messages[obj.line].push(obj);
+		var line = obj.line;
+		this.messages[line] = _.union(this.messages[line] || [], [obj]);
 	},
 
-	addWarning: function (line, message) {
+	addWarning: function (message, loc) {
+		var line = _.isArray(loc) ? this.lineFromRange(loc) : loc;
+
 		this.addMessage({
-			type: WARNING,
+			type: this.WARNING,
 			line: line,
 			data: message
 		});
 	},
 
-	addError: function (line, message) {
+	addError: function (message, loc) {
+		var line = _.isArray(loc) ? this.lineFromRange(loc) : loc;
+
 		this.addMessage({
-			type: ERROR,
+			type: this.ERROR,
 			line: line,
 			data: message
 		});
 	}
 };
 
-exports.ERROR = ERROR;
-exports.WARNING = WARNING;
 exports.Report = Report;

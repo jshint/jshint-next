@@ -12,7 +12,7 @@ function trailingComma(expr) {
 	var token = tokens[tokens.length - 2];
 
 	if (_.all([token.type === "Punctuator", token.value === "," ], _.identity)) {
-		report.addError(-1, constants.TrailingComma);
+		report.addError(constants.TrailingComma, token.range);
 	}
 }
 
@@ -34,14 +34,14 @@ function parse(tree) {
 	});
 }
 
-exports.parse = function (tree) {
-	report = new reporter.Report();
+exports.parse = function (tree, source) {
+	report = new reporter.Report(source);
 	program = tree;
 
 	if (program.errors.length) {
 		program.errors.forEach(function (err) {
 			var msg = err.message.split(": ")[1];
-			report.addError(err.lineNumber, constants.fromEsprima(msg));
+			report.addError(constants.fromEsprima(msg), err.lineNumber);
 		});
 	}
 

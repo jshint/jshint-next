@@ -7,16 +7,16 @@ exports.testReport = function (test) {
 	test.equal(_.size(report.errors), 0);
 	test.equal(_.size(report.warnings), 0);
 
-	report.addError(1, "Random Error");
-	report.addError(2, "Another Error");
-	report.addWarning(3, "Random Warning");
+	report.addError("Random Error", 1);
+	report.addError("Another Error", 2);
+	report.addWarning("Random Warning", 3);
 
 	test.equal(_.size(report.messages), 3);
 	test.equal(_.size(report.errors), 2);
 	test.equal(_.size(report.warnings), 1);
 
 	test.deepEqual(report.errors["1"][0], {
-		type: reporter.ERROR,
+		type: report.ERROR,
 		line: 1,
 		data: "Random Error"
 	});
@@ -28,8 +28,8 @@ exports.testMixin = function (test) {
 	var firstReport = new reporter.Report();
 	var secondReport = new reporter.Report();
 
-	firstReport.addError(1, "Random Error");
-	secondReport.addError(1, "Another Error");
+	firstReport.addError("Random Error", 1);
+	secondReport.addError("Another Error", 1);
 
 	firstReport.mixin(secondReport);
 	test.equal(firstReport.errors["1"].length, 2);

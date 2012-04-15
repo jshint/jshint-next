@@ -7,7 +7,7 @@ var raven    = require("./raven.js");
 var asherah  = require("./asherah.js");
 
 var JSHINT = function (args) {
-	var report = new reporter.Report();
+	var report = new reporter.Report(args.code);
 	var tree = parser.parse(args.code, {
 		range:    true, // Include range-based location data.
 		loc:      true, // Include column-based location data.
@@ -31,7 +31,7 @@ var JSHINT = function (args) {
 	// Each module returns its own report that then can be combined into
 	// the final report.
 
-	report.mixin(reason.parse(tree));
+	report.mixin(reason.parse(tree, args.code));
 	// report.mixin(raven.parse(tree));
 	// report.mixin(asherah.parse(tree));
 

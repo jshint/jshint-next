@@ -17,19 +17,11 @@ exports.testEsprimaErrors = function (test) {
 
 exports.testTrailingComma = function (test) {
 	var report = linter.lint({ code: fixtures.get("trailing.js") }).report;
-	var error;
 
-	test.equal(report.errors["-1"].length, 3);
-	test.equal(_.size(report.errors), 1);
-
-	error = report.errors["-1"][0];
-	test.equal(error.data.code, "E001");
-
-	error = report.errors["-1"][1];
-	test.equal(error.data.code, "E001");
-
-	error = report.errors["-1"][2];
-	test.equal(error.data.code, "E001");
+	test.equal(_.size(report.errors), 3);
+	test.equal(report.errors["2"][0].data.code, "E001");
+	test.equal(report.errors["4"][0].data.code, "E001");
+	test.equal(report.errors["9"][0].data.code, "E001");
 
 	test.done();
 };
