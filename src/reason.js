@@ -3,6 +3,7 @@
 var _ = require("underscore");
 var reporter = require("./reporter.js");
 var utils = require("./utils.js");
+var constants = require("./constants.js");
 
 var report, program;
 
@@ -11,10 +12,9 @@ function trailingComma(expr) {
 	var token = tokens[tokens.length - 2];
 
 	if (_.all([token.type === "Punctuator", token.value === "," ], _.identity)) {
-		report.addError(-1, "Trailing comma.");
+		report.addError(-1, constants.TrailingComma);
 	}
 }
-
 
 // Walk the tree using recursive depth-first search and call
 // appropriate lint functions when needed.
@@ -34,14 +34,14 @@ function parse(tree) {
 	});
 }
 
-
 exports.parse = function (tree) {
 	report = new reporter.Report();
 	program = tree;
 
 	if (program.errors.length) {
 		program.errors.forEach(function (err) {
-			report.addError(err.lineNumber, err.message.split(": ")[1]);
+			var msg = err.message.split(": ")[1];
+			report.addError(err.lineNumber, constants.fromEsprima(msg));
 		});
 	}
 

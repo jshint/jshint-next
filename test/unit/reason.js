@@ -9,8 +9,8 @@ exports.testEsprimaErrors = function (test) {
 	var report = linter.lint({ code: fixtures.get("esprima.js") }).report;
 	var error = report.errors["3"][0];
 
-	test.equal(error.data, "Strict mode code may not include a with statement");
 	test.equal(error.line, 3);
+	test.equal(error.data.code, "E002");
 
 	test.done();
 };
@@ -23,13 +23,13 @@ exports.testTrailingComma = function (test) {
 	test.equal(_.size(report.errors), 1);
 
 	error = report.errors["-1"][0];
-	test.equal(error.data, "Trailing comma.");
+	test.equal(error.data.code, "E001");
 
 	error = report.errors["-1"][1];
-	test.equal(error.data, "Trailing comma.");
+	test.equal(error.data.code, "E001");
 
 	error = report.errors["-1"][2];
-	test.equal(error.data, "Trailing comma.");
+	test.equal(error.data.code, "E001");
 
 	test.done();
 };
