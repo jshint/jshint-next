@@ -1,13 +1,13 @@
 "use strict";
 
-var parser   = require("esprima");
-var reporter = require("./reporter.js");
-var reason   = require("./reason.js");
-var raven    = require("./raven.js");
-var asherah  = require("./asherah.js");
+var parser  = require("esprima");
+var utils   = require("./utils.js");
+var reason  = require("./reason.js");
+var raven   = require("./raven.js");
+var asherah = require("./asherah.js");
 
 var JSHINT = function (args) {
-	var report = new reporter.Report(args.code);
+	var report = new utils.Report(args.code);
 	var tree = parser.parse(args.code, {
 		range:    true, // Include range-based location data.
 		loc:      true, // Include column-based location data.

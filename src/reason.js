@@ -1,7 +1,6 @@
 "use strict";
 
 var _ = require("underscore");
-var reporter = require("./reporter.js");
 var utils = require("./utils.js");
 var constants = require("./constants.js");
 
@@ -35,7 +34,7 @@ function parse(tree) {
 }
 
 exports.parse = function (tree, source) {
-	report = new reporter.Report(source);
+	report = new utils.Report(source);
 	program = tree;
 
 	if (program.errors.length) {

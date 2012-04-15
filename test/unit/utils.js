@@ -1,8 +1,8 @@
 var _ = require("underscore");
-var reporter = require("../../src/reporter.js");
+var utils = require("../../src/utils.js");
 
 exports.testReport = function (test) {
-	var report = new reporter.Report();
+	var report = new utils.Report();
 	test.equal(_.size(report.messages), 0);
 	test.equal(_.size(report.errors), 0);
 	test.equal(_.size(report.warnings), 0);
@@ -25,8 +25,8 @@ exports.testReport = function (test) {
 };
 
 exports.testMixin = function (test) {
-	var firstReport = new reporter.Report();
-	var secondReport = new reporter.Report();
+	var firstReport = new utils.Report();
+	var secondReport = new utils.Report();
 
 	firstReport.addError("Random Error", 1);
 	secondReport.addError("Another Error", 1);
