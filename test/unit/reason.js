@@ -19,13 +19,16 @@ exports.testTrailingComma = function (test) {
 	var report = linter.lint({ code: fixtures.get("trailing.js") }).report;
 	var error;
 
-	test.equal(report.errors["-1"].length, 2);
+	test.equal(report.errors["-1"].length, 3);
 	test.equal(_.size(report.errors), 1);
 
 	error = report.errors["-1"][0];
 	test.equal(error.data, "Trailing comma.");
 
 	error = report.errors["-1"][1];
+	test.equal(error.data, "Trailing comma.");
+
+	error = report.errors["-1"][2];
 	test.equal(error.data, "Trailing comma.");
 
 	test.done();

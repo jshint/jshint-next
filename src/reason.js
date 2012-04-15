@@ -4,47 +4,47 @@ var _ = require("underscore");
 var reporter = require("./reporter.js");
 var utils = require("./utils.js");
 
-var report;
-var program;
+var report, program;
 
-function transformEsprimaErrors() {
-	var errors = program.errors;
-
-	errors.forEach(function (error) {
-		report.addError(error.lineNumber, error.message.split(": ")[1]);
-	});
-}
-
-function checkArray(array) {
-	var tokens = utils.getRange(program.tokens, array.range);
+function trailingComma(expr) {
+	var tokens = utils.getRange(program.tokens, expr.range);
 	var token = tokens[tokens.length - 2];
 
-	if (_.all([token.type === "Punctuator", token.value === "," ], _.identity))
+	if (_.all([token.type === "Punctuator", token.value === "," ], _.identity)) {
 		report.addError(-1, "Trailing comma.");
+	}
 }
 
-function parseTree(tree) {
-	if (tree.type === "ArrayExpression")
-		checkArray(tree);
+
+// Walk the tree using recursive depth-first search and call
+// appropriate lint functions when needed.
+
+function parse(tree) {
+	switch (tree.type) {
+	case "ArrayExpression":
+		trailingComma(tree);
+		break;
+	case "ObjectExpression":
+		trailingComma(tree);
+	}
 
 	_.each(tree, function (val, key) {
-		if (!_.isObject(val) && !_.isArray(val))
-			return;
-
-		parseTree(val);
+		if (_.isObject(val) || _.isArray(val))
+			parse(val);
 	});
 }
 
-function parse(tree) {
+
+exports.parse = function (tree) {
 	report = new reporter.Report();
 	program = tree;
 
-	if (tree.errors.length)
-		transformEsprimaErrors();
+	if (program.errors.length) {
+		program.errors.forEach(function (err) {
+			report.addError(err.lineNumber, err.message.split(": ")[1]);
+		});
+	}
 
-	parseTree(program.body);
-
+	parse(program.body);
 	return report;
-}
-
-exports.parse = parse;
+};
