@@ -3,15 +3,15 @@ var assert = require("assert");
 var fs = require("fs");
 var linter = require("../../src/jshint.js");
 
-function Fixtures(dirname, filename) {
-	this.dirname = dirname;
-	this.filename = filename;
-}
-
 // Returns contents of a fixture.
 //
 // Fixture's parent directory depends on the suite's file name. For example,
 // fixtures for test/unit/parser.js should be in test/fixtures/parser/<file>.js
+
+function Fixtures(dirname, filename) {
+	this.dirname = dirname;
+	this.filename = filename;
+}
 
 Fixtures.prototype.get = function (name) {
 	var dir, stream;
@@ -22,6 +22,9 @@ Fixtures.prototype.get = function (name) {
 
 	return stream.toString();
 };
+
+// A test helper designed specifically for JSHint. It allows us to write
+// tests in a declarative manner thus reducing code duplication.
 
 function createRunner(dirname, filename) {
 	var fixtures = new Fixtures(dirname, filename);
@@ -43,8 +46,13 @@ function createRunner(dirname, filename) {
 				var retval = linter.lint({ code: source });
 				var errors = retval.report.errors;
 
+				// If the linter didn't produce any errors and we don't
+				// expect any, quietly return.
+
 				if (errors.length === 0 && expected.length === 0)
 					return;
+
+				// Otherwise get a list of unexpected errors.
 
 				var unexpected = _.reject(errors, function (err, line) {
 					return _.any(expected, function (exp) {
@@ -52,14 +60,21 @@ function createRunner(dirname, filename) {
 					});
 				});
 
+				// And errors that were expected but not thrown by the linter.
+
 				var unthrown = _.reject(expected, function (exp) {
 					return _.any(errors, function (err) {
 						return err.line === exp.line && err.data.code === exp.code;
 					});
 				});
 
+				// If we expected all errors thrown by the linter, quietly return.
+
 				if (unexpected.length === 0 && unthrown.length === 0)
 					return void test.ok(true);
+
+				// Otherwise format a message listing all unexpected and unthrown
+				// errors and fail the test case by failing an assertion.
 
 				var message = "";
 
@@ -79,6 +94,9 @@ function createRunner(dirname, filename) {
 
 				test.ok(false, message);
 			},
+
+			// Shortcut to helper.test that allows us to provide a fixture file name
+			// instead of a string.
 
 			testFile: function (name, options, globals) {
 				helper.test(fixtures.get(name), options, globals);

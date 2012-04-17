@@ -6,6 +6,9 @@ var constants = require("./constants.js");
 
 var report, program;
 
+
+// Check for trailing commas in arrays and objects.
+
 function trailingComma(expr) {
 	var tokens = utils.getRange(program.tokens, expr.range);
 	var token = tokens[tokens.length - 2];
@@ -15,6 +18,10 @@ function trailingComma(expr) {
 	}
 }
 
+
+// Check for properties named __iterator__. This is a special property
+// available only in browsers with JavaScript 1.7 implementation.
+
 function dunderIterator(expr) {
 	var prop = expr.property;
 
@@ -23,6 +30,10 @@ function dunderIterator(expr) {
 	}
 }
 
+
+// Check for properties named __proto__. This special property was
+// deprecated long time ago.
+
 function dunderProto(expr) {
 	var prop = expr.property;
 
@@ -30,6 +41,7 @@ function dunderProto(expr) {
 		report.addError(constants.DunderProto, prop.range);
 	}
 }
+
 
 // Walk the tree using recursive depth-first search and call
 // appropriate lint functions when needed.
