@@ -43,7 +43,7 @@ function createRunner(dirname, filename) {
 				var retval = linter.lint({ code: source });
 				var errors = retval.report.errors;
 
-				if (errors.length === 0 && definedErrors.length === 0)
+				if (errors.length === 0 && expected.length === 0)
 					return;
 
 				var unexpected = _.reject(errors, function (err, line) {
@@ -65,19 +65,19 @@ function createRunner(dirname, filename) {
 
 				if (unexpected.length > 0) {
 					message += "\n\tUnexpected errors";
-					message += "\n\t    " + _.map(unexpected, function (err) {
-						return "L" + err.line + ": " + err.data.code;
+					message += "\n" + _.map(unexpected, function (err) {
+						return "\t    L" + err.line + ": " + err.data.code;
 					}).join("\n");
 				}
 
 				if (unthrown.length > 0) {
 					message += "\n\tErrors defined, but not thrown by JSHint";
-					message += "\n\t    " + _.map(unthrown, function (err) {
-						return "L" + err.line + ": " + err.code;
+					message += "\n" + _.map(unthrown, function (err) {
+						return "\t    L" + err.line + ": " + err.code;
 					}).join("\n");
 				}
 
-				assert.ok(false, message);
+				test.ok(false, message);
 			},
 
 			testFile: function (name, options, globals) {

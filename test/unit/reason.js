@@ -22,3 +22,23 @@ exports.testTrailingComma = function (test) {
 
 	test.done();
 };
+
+exports.testDunderIterator = function (test) {
+	runner(test)
+		.addError(19, "E004")
+		.testFile("iterator.js");
+
+	test.done();
+};
+
+exports.testDunderProto = function (test) {
+	runner(test)
+		.addError(7, "E005")
+		.addError(8, "E005")
+		.addError(10, "E005")
+		.addError(29, "E005")
+		.addError(33, "E005")
+		.testFile("proto.js");
+
+	test.done();
+};

@@ -15,6 +15,22 @@ function trailingComma(expr) {
 	}
 }
 
+function dunderIterator(expr) {
+	var prop = expr.property;
+
+	if (prop.type === "Identifier" && prop.name === "__iterator__") {
+		report.addError(constants.DunderIterator, prop.range);
+	}
+}
+
+function dunderProto(expr) {
+	var prop = expr.property;
+
+	if (prop.type === "Identifier" && prop.name === "__proto__") {
+		report.addError(constants.DunderProto, prop.range);
+	}
+}
+
 // Walk the tree using recursive depth-first search and call
 // appropriate lint functions when needed.
 
@@ -25,6 +41,10 @@ function parse(tree) {
 		break;
 	case "ObjectExpression":
 		trailingComma(tree);
+		break;
+	case "MemberExpression":
+		dunderIterator(tree);
+		dunderProto(tree);
 	}
 
 	_.each(tree, function (val, key) {
