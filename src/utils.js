@@ -18,32 +18,30 @@ Report.prototype = {
 	},
 
 	get errors() {
-		var ret = {};
+		var ret = [];
 		var self = this;
 
 		_.each(self.messages, function (pool, line) {
-			var newPool = _.filter(pool, function (msg) {
-				return msg.type === self.ERROR;
+			_.each(pool, function (msg) {
+				if (msg.type === self.ERROR) {
+					ret.push(msg);
+				}
 			});
-
-			if (newPool.length)
-				ret[line] = newPool;
 		});
 
 		return ret;
 	},
 
 	get warnings() {
-		var ret = {};
+		var ret = [];
 		var self = this;
 
 		_.each(self.messages, function (pool, line) {
-			var newPool = _.filter(pool, function (msg) {
-				return msg.type === self.WARNING;
+			_.each(pool, function (msg) {
+				if (msg.type === self.WARNING) {
+					ret.push(msg);
+				}
 			});
-
-			if (newPool.length)
-				ret[line] = newPool;
 		});
 
 		return ret;
