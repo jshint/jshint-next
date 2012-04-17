@@ -23,63 +23,73 @@ Fixtures.prototype.get = function (name) {
 	return stream.toString();
 };
 
-function runner(test) {
-	var expected = [];
+function createRunner(dirname, filename) {
+	var fixtures = new Fixtures(dirname, filename);
 
-	var helper = {
-		addError: function (line, code) {
-			expected.push({
-				line: line,
-				code: code
-			});
+	function runner(test) {
+		var expected = [];
 
-			return helper;
-		},
-
-		test: function (source, options, globals) {
-			var retval = linter.lint({ code: source });
-			var errors = retval.report.errors;
-
-			if (errors.length === 0 && definedErrors.length === 0)
-				return;
-
-			var unexpected = _.reject(errors, function (err, line) {
-				return _.any(expected, function (exp) {
-					return exp.line === err.line && exp.code === err.data.code;
+		var helper = {
+			addError: function (line, code) {
+				expected.push({
+					line: line,
+					code: code
 				});
-			});
 
-			var unthrown = _.reject(expected, function (exp) {
-				return _.any(errors, function (err) {
-					return err.line === exp.line && err.data.code === exp.code;
+				return helper;
+			},
+
+			test: function (source, options, globals) {
+				var retval = linter.lint({ code: source });
+				var errors = retval.report.errors;
+
+				if (errors.length === 0 && definedErrors.length === 0)
+					return;
+
+				var unexpected = _.reject(errors, function (err, line) {
+					return _.any(expected, function (exp) {
+						return exp.line === err.line && exp.code === err.data.code;
+					});
 				});
-			});
 
-			if (unexpected.length === 0 && unthrown.length === 0)
-				return void test.ok(true);
+				var unthrown = _.reject(expected, function (exp) {
+					return _.any(errors, function (err) {
+						return err.line === exp.line && err.data.code === exp.code;
+					});
+				});
 
-			var message = "";
+				if (unexpected.length === 0 && unthrown.length === 0)
+					return void test.ok(true);
 
-			if (unexpected.length > 0) {
-				message += "\n\tUnexpected errors";
-				message += "\n\t    " + _.map(unexpected, function (err) {
-					return "L" + err.line + ": " + err.data.code;
-				}).join("\n");
+				var message = "";
+
+				if (unexpected.length > 0) {
+					message += "\n\tUnexpected errors";
+					message += "\n\t    " + _.map(unexpected, function (err) {
+						return "L" + err.line + ": " + err.data.code;
+					}).join("\n");
+				}
+
+				if (unthrown.length > 0) {
+					message += "\n\tErrors defined, but not thrown by JSHint";
+					message += "\n\t    " + _.map(unthrown, function (err) {
+						return "L" + err.line + ": " + err.code;
+					}).join("\n");
+				}
+
+				assert.ok(false, message);
+			},
+
+			testFile: function (name, options, globals) {
+				helper.test(fixtures.get(name), options, globals);
 			}
+		};
 
-			if (unthrown.length > 0) {
-				message += "\n\tErrors defined, but not thrown by JSHint";
-				message += "\n\t    " + _.map(unthrown, function (err) {
-					return "L" + err.line + ": " + err.code;
-				}).join("\n");
-			}
+		return helper;
+	}
 
-			assert.ok(false, message);
-		}
-	};
-
-	return helper;
+	return runner;
 }
 
 exports.Fixtures = Fixtures;
-exports.runner = runner;
+exports.createRunner = createRunner;
