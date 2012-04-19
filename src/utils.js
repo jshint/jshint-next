@@ -79,11 +79,31 @@ Report.prototype = {
 	}
 };
 
-var getRange = function (tokens, range) {
-	return _.filter(tokens, function (token) {
-		return token.range[0] >= range[0] && token.range[1] <= range[1];
+var getRange = function (tokens, range, additional) {
+	var slice = [];
+	additional = additional || 0;
+
+	_.each(tokens, function (token) {
+		if (token.range[0] < range[0])
+			return;
+
+		if (token.range[1] <= range[1])
+			return void slice.push(token);
+
+		if (additional > 0) {
+			slice.push(token);
+			additional = additional - 1;
+		}
 	});
+
+	return slice;
 };
+
+_.each(["Punctuator", "Keyword"], function (name) {
+	exports["is" + name] = function (token, value) {
+		return token.type === name && token.value === value;
+	};
+});
 
 exports.Report = Report;
 exports.getRange = getRange;

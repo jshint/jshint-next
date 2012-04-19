@@ -5,7 +5,8 @@ var errorMessages = [
 	[ "E002", "'with' statement is prohibited in strict mode.", "StrictModeWith" ],
 	[ "E003", "'return' can be used only within functions.", "IllegalReturn" ],
 	[ "E004", "'__iterator__' property is only available in JavaScript 1.7.", "DunderIterator" ],
-	[ "E005", "'__proto___' property is deprecated.", "DunderProto" ]
+	[ "E005", "'__proto___' property is deprecated.", "DunderProto" ],
+	[ "E006", "Missing semicolon.", "MissingSemicolon" ],
 ];
 
 errorMessages.forEach(function (msg) {

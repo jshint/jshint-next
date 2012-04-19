@@ -43,6 +43,55 @@ function dunderProto(expr) {
 }
 
 
+// Check for missing semicolons but only when they have a potential
+// of breaking things due to automatic semicolon insertion.
+
+function missingSemicolon(expr) {
+	var type = expr.expression.type;
+
+	if (type !== "CallExpression" && type !== "MemberExpression")
+		return;
+
+	var tokens = utils.getRange(program.tokens, expr.range);
+	_.each(tokens, function (token, i) {
+		if (i === 0)
+			return;
+
+		if (!utils.isPunctuator(token, "(") && !utils.isPunctuator(token, "["))
+			return;
+
+		var prev = tokens[i - 1];
+		var tokenLine = report.lineFromRange(token.range);
+		var prevLine = report.lineFromRange(prev.range);
+
+		if (tokenLine === prevLine)
+			return;
+
+		if (!utils.isPunctuator(prev, ";")) {
+			report.addError(constants.MissingSemicolon, prev.range);
+		}
+	});
+}
+
+function missingReturnSemicolon(expr) {
+	var tokens = utils.getRange(program.tokens, expr.range, 2);
+
+	if (report.lineFromRange(tokens[1].range) === report.lineFromRange(tokens[0].range))
+		return;
+
+	if (tokens[1] && utils.isPunctuator(tokens[1], ";"))
+		return;
+
+	if (tokens[1] && utils.isKeyword(tokens[1], "var"))
+		return;
+
+	if (tokens[1] && utils.isKeyword(tokens[1], "case"))
+		return;
+
+	report.addError(constants.MissingSemicolon, tokens[0].range);
+}
+
+
 // Walk the tree using recursive depth-first search and call
 // appropriate lint functions when needed.
 
@@ -57,6 +106,12 @@ function parse(tree) {
 	case "MemberExpression":
 		dunderIterator(tree);
 		dunderProto(tree);
+		break;
+	case "ExpressionStatement":
+		missingSemicolon(tree);
+		break;
+	case "ReturnStatement":
+		missingReturnSemicolon(tree);
 	}
 
 	_.each(tree, function (val, key) {

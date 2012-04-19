@@ -1,5 +1,9 @@
 var _ = require("underscore");
+var linter = require("../../src/jshint.js");
 var utils = require("../../src/utils.js");
+var helpers = require("../lib/helpers.js");
+
+var fixtures = new helpers.Fixtures(__dirname, __filename);
 
 exports.testReport = function (test) {
 	var report = new utils.Report();
@@ -34,6 +38,24 @@ exports.testMixin = function (test) {
 
 	firstReport.mixin(secondReport);
 	test.equal(firstReport.errors.length, 2);
+
+	test.done();
+};
+
+exports.getRange = function (test) {
+	var code = fixtures.get("simple_file.js");
+	var tokens = linter.lint({ code: code }).tree.tokens;
+
+	var slice = utils.getRange(tokens, [ 0, 27 ]);
+	test.equal(slice.length, 3);
+	test.equal(slice[0].value, "var");
+	test.equal(slice[1].value, "number");
+	test.equal(slice[2].value, "=");
+
+	slice = utils.getRange(tokens, [ 84, 84 ], 2);
+	test.equal(slice.length, 2);
+	test.equal(slice[0].value, ")");
+	test.equal(slice[1].value, ";");
 
 	test.done();
 };

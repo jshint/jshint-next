@@ -42,3 +42,13 @@ exports.testDunderProto = function (test) {
 
 	test.done();
 };
+
+exports.testMissingSemicolon = function (test) {
+	runner(test)
+		.addError(6, "E006")
+		.addError(29, "E006")
+		.addError(31, "E006")
+		.testFile("asi.js");
+
+	test.done();
+};
