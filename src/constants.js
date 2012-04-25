@@ -1,6 +1,6 @@
 "use strict";
 
-var errorMessages = [
+var errors = [
 	[ "E001", "Trailing comma causes errors in some versions of IE.", "TrailingComma" ],
 	[ "E002", "'with' statement is prohibited in strict mode.", "StrictModeWith" ],
 	[ "E003", "'return' can be used only within functions.", "IllegalReturn" ],
@@ -10,8 +10,22 @@ var errorMessages = [
 	[ "E007", "Unexpected debugger statement.", "DebuggerStatement" ]
 ];
 
-errorMessages.forEach(function (msg) {
-	exports[msg[2]] = {
+var warnings = [
+	[ "W001", "Bitwise operator (mistyped logical operator?)", "BitwiseOperator" ]
+];
+
+exports.errors = {};
+exports.warnings = {};
+
+errors.forEach(function (msg) {
+	exports.errors[msg[2]] = {
+		code: msg[0],
+		desc: msg[1]
+	};
+});
+
+warnings.forEach(function (msg) {
+	exports.warnings[msg[2]] = {
 		code: msg[0],
 		desc: msg[1]
 	};
@@ -23,5 +37,5 @@ exports.fromEsprima = function (msg) {
 		"Strict mode code may not include a with statement": "StrictModeWith"
 	};
 
-	return exports[mapping[msg]];
+	return exports.errors[mapping[msg]];
 };

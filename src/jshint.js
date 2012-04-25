@@ -32,8 +32,8 @@ var JSHINT = function (args) {
 	// the final report.
 
 	report.mixin(reason.parse(tree, args.code));
-	// report.mixin(raven.parse(tree));
-	// report.mixin(asherah.parse(tree));
+	report.mixin(raven.parse(tree, args.code));
+	// report.mixin(asherah.parse(tree, args.code));
 
 	return {
 		tree:   tree,

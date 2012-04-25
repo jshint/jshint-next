@@ -14,7 +14,7 @@ function trailingComma(expr) {
 	var token = tokens[tokens.length - 2];
 
 	if (_.all([token.type === "Punctuator", token.value === "," ], _.identity)) {
-		report.addError(constants.TrailingComma, token.range);
+		report.addError(constants.errors.TrailingComma, token.range);
 	}
 }
 
@@ -26,7 +26,7 @@ function dunderIterator(expr) {
 	var prop = expr.property;
 
 	if (prop.type === "Identifier" && prop.name === "__iterator__") {
-		report.addError(constants.DunderIterator, prop.range);
+		report.addError(constants.errors.DunderIterator, prop.range);
 	}
 }
 
@@ -38,7 +38,7 @@ function dunderProto(expr) {
 	var prop = expr.property;
 
 	if (prop.type === "Identifier" && prop.name === "__proto__") {
-		report.addError(constants.DunderProto, prop.range);
+		report.addError(constants.errors.DunderProto, prop.range);
 	}
 }
 
@@ -68,7 +68,7 @@ function missingSemicolon(expr) {
 			return;
 
 		if (!utils.isPunctuator(prev, ";")) {
-			report.addError(constants.MissingSemicolon, prev.range);
+			report.addError(constants.errors.MissingSemicolon, prev.range);
 		}
 	});
 }
@@ -88,14 +88,14 @@ function missingReturnSemicolon(expr) {
 	if (tokens[1] && utils.isKeyword(tokens[1], "case"))
 		return;
 
-	report.addError(constants.MissingSemicolon, tokens[0].range);
+	report.addError(constants.errors.MissingSemicolon, tokens[0].range);
 }
 
 // Check for debugger statements. You really don't want them in your
 // production code.
 
 function unexpectedDebugger(expr) {
-	report.addError(constants.DebuggerStatement, expr.range);
+	report.addError(constants.errors.DebuggerStatement, expr.range);
 }
 
 
