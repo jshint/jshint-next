@@ -7,6 +7,7 @@ var errorMessages = [
 	[ "E004", "'__iterator__' property is only available in JavaScript 1.7.", "DunderIterator" ],
 	[ "E005", "'__proto___' property is deprecated.", "DunderProto" ],
 	[ "E006", "Missing semicolon.", "MissingSemicolon" ],
+	[ "E007", "Unexpected debugger statement.", "DebuggerStatement" ]
 ];
 
 errorMessages.forEach(function (msg) {

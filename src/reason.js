@@ -91,6 +91,13 @@ function missingReturnSemicolon(expr) {
 	report.addError(constants.MissingSemicolon, tokens[0].range);
 }
 
+// Check for debugger statements. You really don't want them in your
+// production code.
+
+function unexpectedDebugger(expr) {
+	report.addError(constants.DebuggerStatement, expr.range);
+}
+
 
 // Walk the tree using recursive depth-first search and call
 // appropriate lint functions when needed.
@@ -112,6 +119,9 @@ function parse(tree) {
 		break;
 	case "ReturnStatement":
 		missingReturnSemicolon(tree);
+		break;
+	case "DebuggerStatement":
+		unexpectedDebugger(tree);
 	}
 
 	_.each(tree, function (val, key) {

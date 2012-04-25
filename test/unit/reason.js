@@ -52,3 +52,11 @@ exports.testMissingSemicolon = function (test) {
 
 	test.done();
 };
+
+exports.testDebugger = function (test) {
+	runner(test)
+		.addError(5, "E007")
+		.testFile("debugger.js");
+
+	test.done();
+};
