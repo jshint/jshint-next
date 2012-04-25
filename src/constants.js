@@ -11,7 +11,8 @@ var errors = [
 ];
 
 var warnings = [
-	[ "W001", "Bitwise operator (mistyped logical operator?)", "BitwiseOperator" ]
+	[ "W001", "Bitwise operator. (mistyped logical operator?)", "BitwiseOperator" ],
+	[ "W002", "Unsafe comparison.", "UnsafeComparison" ]
 ];
 
 exports.errors = {};

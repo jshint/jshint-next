@@ -18,3 +18,22 @@ exports.testBitwiseOperators = function (test) {
 
 	test.done();
 };
+
+exports.testUnsafeComparison = function (test) {
+	runner(test)
+		.addError(2, "W002")
+		.addError(5, "W002")
+		.addError(8, "W002")
+		.addError(11, "W002")
+		.addError(14, "W002")
+		.addError(17, "W002")
+		.addError(28, "W002")
+		.addError(31, "W002")
+		.addError(34, "W002")
+		.addError(37, "W002")
+		.addError(40, "W002")
+		.addError(43, "W002")
+		.testFile("comparison.js");
+
+	test.done();
+};
