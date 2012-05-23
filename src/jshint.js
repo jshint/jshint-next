@@ -3,7 +3,6 @@
 var parser  = require("esprima");
 var utils   = require("./utils.js");
 var reason  = require("./reason.js");
-var raven   = require("./raven.js");
 var asherah = require("./asherah.js");
 
 var JSHINT = function (args) {
@@ -19,11 +18,8 @@ var JSHINT = function (args) {
 	// Check provided JavaScript code using three modules:
 	//
 	// * Reason checks for things that can break your application in
-	//   at least one browser (trailing commas, arguments.callee in
-	//   strict mode, etc.
-	//
-	// * Raven checks for potentially dangerous things (loose comparison
-	//   with null, confusing use of +, etc.)
+	//   at least one browser and other potentially dangerous things
+	//   (loose comparison with null, confusing use of +, etc.)
 	//
 	// * Asherah enforces general JavaScript practices (semicolons, eval,
 	//   simpler array initialization, etc.)
@@ -32,7 +28,6 @@ var JSHINT = function (args) {
 	// the final report.
 
 	report.mixin(reason.parse(tree, args.code));
-	report.mixin(raven.parse(tree, args.code));
 	// report.mixin(asherah.parse(tree, args.code));
 
 	return {
