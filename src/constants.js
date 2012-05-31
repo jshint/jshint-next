@@ -14,7 +14,8 @@ var errors = [
 
 var warnings = [
 	[ "W001", "Bitwise operator. (mistyped logical operator?)", "BitwiseOperator" ],
-	[ "W002", "Unsafe comparison.", "UnsafeComparison" ]
+	[ "W002", "Unsafe comparison.", "UnsafeComparison" ],
+	[ "W003", "Redefined variable.", "RedefinedVariable" ]
 ];
 
 exports.errors = {};

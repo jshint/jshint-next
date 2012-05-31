@@ -93,3 +93,16 @@ exports.testUnsafeComparison = function (test) {
 
 	test.done();
 };
+
+exports.testShadow = function (test) {
+	runner(test)
+		.addError(3, "W003")
+		.addError(4, "W003")
+		.addError(8, "W003")
+		.addError(12, "W003")
+		.addError(16, "W003")
+		.addError(17, "W003")
+		.testFile("shadow.js");
+
+	test.done();
+};

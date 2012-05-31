@@ -141,6 +141,11 @@ function unsafeComparison(expr) {
 		report.addError(constants.warnings.UnsafeComparison, expr.right.range);
 }
 
+function redefinedVariables(name, range) {
+	if (scopes.isDefined(name))
+		report.addError(constants.warnings.RedefinedVariable, range);
+}
+
 // Walk the tree using recursive depth-first search and call
 // appropriate lint functions when needed.
 
