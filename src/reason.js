@@ -201,7 +201,7 @@ function parse(tree) {
 		if (!_.isObject(val) && !_.isArray(val))
 			return;
 
-		switch(val.type) {
+		switch (val.type) {
 		case "FunctionDeclaration":
 			scopes.push(val.id.name);
 			parse(val);
