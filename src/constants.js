@@ -1,5 +1,7 @@
 "use strict";
 
+// Errors and warnings
+
 var errors = [
 	[ "E001", "Trailing comma causes errors in some versions of IE.", "TrailingComma" ],
 	[ "E002", "'with' statement is prohibited in strict mode.", "StrictModeWith" ],

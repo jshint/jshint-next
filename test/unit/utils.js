@@ -59,3 +59,32 @@ exports.getRange = function (test) {
 
 	test.done();
 };
+
+exports.testScopeStack = function (test) {
+	var scope = new utils.ScopeStack();
+	test.equal(scope.length, 1);
+	test.equal(scope.getCurrent().name, "(global)");
+
+	scope.addVariable("weebly");
+	test.ok(scope.isDefined("weebly"));
+
+	scope.push("(anon)");
+	test.equal(scope.length, 2);
+	test.equal(scope.getCurrent().name, "(anon)");
+
+	scope.addVariable("wobly");
+	test.ok(scope.isDefined("wobly"));
+	test.ok(scope.isDefined("weebly"));
+
+	scope.addGlobalVariable("stuff");
+	test.ok(scope.isDefined("stuff"));
+
+	scope.pop();
+	test.equal(scope.length, 1);
+	test.equal(scope.getCurrent().name, "(global)");
+	test.ok(scope.isDefined("weebly"));
+	test.ok(scope.isDefined("stuff"));
+	test.ok(!scope.isDefined("wobly"));
+
+	test.done();
+};

@@ -4,7 +4,7 @@ var _ = require("underscore");
 var utils = require("./utils.js");
 var constants = require("./constants.js");
 
-var report, program;
+var report, program, scopes;
 
 // Check for trailing commas in arrays and objects.
 
@@ -171,16 +171,51 @@ function parse(tree) {
 		break;
 	case "UnaryExpression":
 		bitwiseOperators(tree);
+		break;
+	case "VariableDeclarator":
+		redefinedVariables(tree.id.name, tree.id.range);
+		scopes.addVariable(tree.id.name);
+		break;
+	case "FunctionExpression":
+	case "FunctionDeclaration":
+		if (tree.id && tree.id.name) {
+			redefinedVariables(tree.id.name, tree.id.range);
+			scopes.addVariable(tree.id.name);
+		}
+
+		_.each(tree.params, function (param, key) {
+			redefinedVariables(param.name, param.range);
+			scopes.addVariable(param.name);
+		});
 	}
 
 	_.each(tree, function (val, key) {
-		if (_.isObject(val) || _.isArray(val))
+		if (val === null)
+			return;
+
+		if (!_.isObject(val) && !_.isArray(val))
+			return;
+
+		switch(val.type) {
+		case "FunctionDeclaration":
+			scopes.push(val.id.name);
 			parse(val);
+			scopes.pop();
+			break;
+		case "FunctionExpression":
+			scopes.push("(anon)");
+			parse(val);
+			scopes.pop();
+			break;
+		default:
+			parse(val);
+		}
 	});
 }
 
 exports.parse = function (tree, source) {
-	report = new utils.Report(source);
+	report  = new utils.Report(source);
+	scopes  = new utils.ScopeStack();
 	program = tree;
 
 	if (program.errors.length) {

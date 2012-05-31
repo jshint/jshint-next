@@ -2,6 +2,58 @@
 
 var _ = require("underscore");
 
+function ScopeStack() {
+	this.stack  = [];
+	this.length = 0;
+	this.push("(global)");
+}
+
+ScopeStack.prototype = {
+	push: function (name) {
+		this.stack.push({ name: name, vars: {} });
+		this.length += 1;
+	},
+
+	pop: function () {
+		this.stack.pop();
+		this.length -= 1;
+	},
+
+	isDefined: function (name) {
+		var cur = this.length - 1;
+
+		while (cur >= 0) {
+			if (_.has(this.stack[cur].vars, name))
+				return true;
+
+			cur -= 1;
+		}
+
+		return false;
+	},
+
+	addVariable: function (name) {
+		if (this.length < 1)
+			return;
+
+		this.stack[this.length - 1].vars[name] = true;
+	},
+
+	addGlobalVariable: function (name) {
+		if (this.length < 1)
+			return;
+
+		this.stack[0].vars[name] = true;
+	},
+
+	getCurrent: function () {
+		if (this.length < 1)
+			return;
+
+		return this.stack[this.length - 1];
+	}
+};
+
 function Report(source) {
 	this.ERROR   = 1;
 	this.WARNING = 2;
@@ -107,3 +159,4 @@ _.each(["Punctuator", "Keyword"], function (name) {
 
 exports.Report = Report;
 exports.getRange = getRange;
+exports.ScopeStack = ScopeStack;
