@@ -4,13 +4,12 @@ var _ = require("underscore");
 var utils = require("./utils.js");
 var constants = require("./constants.js");
 
-var report, program, scopes;
+var report, program, scopes, tokens;
 
 // Check for trailing commas in arrays and objects.
 
 function trailingComma(expr) {
-	var tokens = utils.getRange(program.tokens, expr.range);
-	var token = tokens[tokens.length - 2];
+	var token = tokens.move(tokens.find(expr.range[1] - 2));
 
 	if (_.all([token.type === "Punctuator", token.value === "," ], _.identity)) {
 		report.addError(constants.errors.TrailingComma, token.range);
@@ -51,43 +50,42 @@ function missingSemicolon(expr) {
 	if (type !== "CallExpression" && type !== "MemberExpression")
 		return;
 
-	var tokens = utils.getRange(program.tokens, expr.range);
-	_.each(tokens, function (token, i) {
-		if (i === 0)
-			return;
+	var slice = tokens.getRange(expr.range);
+	var token = slice.move(1);
+	var prev, curLine, prevLine;
 
-		if (!utils.isPunctuator(token, "(") && !utils.isPunctuator(token, "["))
-			return;
+	while (token !== null) {
+		if (utils.isPunctuator(token, "(") || utils.isPunctuator(token, "[")) {
+			prev = slice.peak(-1);
+			curLine = report.lineFromRange(token.range);
+			prevLine = report.lineFromRange(prev.range);
 
-		var prev = tokens[i - 1];
-		var tokenLine = report.lineFromRange(token.range);
-		var prevLine = report.lineFromRange(prev.range);
-
-		if (tokenLine === prevLine)
-			return;
-
-		if (!utils.isPunctuator(prev, ";")) {
-			report.addError(constants.errors.MissingSemicolon, prev.range);
+			if (curLine !== prevLine && !utils.isPunctuator(prev, ";")) {
+				report.addError(constants.errors.MissingSemicolon, prev.range);
+			}
 		}
-	});
+
+		token = slice.next();
+	}
 }
 
 function missingReturnSemicolon(expr) {
-	var tokens = utils.getRange(program.tokens, expr.range, 2);
+	var cur = tokens.move(tokens.find(expr.range[0]));
+	var next = tokens.peak();
 
-	if (report.lineFromRange(tokens[1].range) === report.lineFromRange(tokens[0].range))
+	if (report.lineFromRange(next.range) === report.lineFromRange(cur.range))
 		return;
 
-	if (tokens[1] && utils.isPunctuator(tokens[1], ";"))
+	if (next && utils.isPunctuator(next, ";"))
 		return;
 
-	if (tokens[1] && utils.isKeyword(tokens[1], "var"))
+	if (next && utils.isKeyword(next, "var"))
 		return;
 
-	if (tokens[1] && utils.isKeyword(tokens[1], "case"))
+	if (next && utils.isKeyword(next, "case"))
 		return;
 
-	report.addError(constants.errors.MissingSemicolon, tokens[0].range);
+	report.addError(constants.errors.MissingSemicolon, cur.range);
 }
 
 // Check for debugger statements. You really don't want them in your
@@ -222,6 +220,7 @@ exports.parse = function (tree, source) {
 	report  = new utils.Report(source);
 	scopes  = new utils.ScopeStack();
 	program = tree;
+	tokens  = new utils.Tokens(tree.tokens);
 
 	if (program.errors.length) {
 		program.errors.forEach(function (err) {

@@ -131,24 +131,84 @@ Report.prototype = {
 	}
 };
 
-var getRange = function (tokens, range, additional) {
-	var slice = [];
-	additional = additional || 0;
+function Tokens(list) {
+	this.list = list || [];
+	this.cur  = this.list.length > 0 ? 0 : null;
+}
 
-	_.each(tokens, function (token) {
-		if (token.range[0] < range[0])
-			return;
+Tokens.prototype = {
+	get length() {
+		return this.list.length;
+	},
 
-		if (token.range[1] <= range[1])
-			return void slice.push(token);
+	get current() {
+		return this.peak(0);
+	},
 
-		if (additional > 0) {
-			slice.push(token);
-			additional = additional - 1;
+	prev: function () {
+		var prev = this.peak(-1);
+
+		if (prev === null)
+			return null;
+
+		this.cur -= 1;
+		return prev;
+	},
+
+	next: function () {
+		var next = this.peak();
+
+		if (next === null)
+			return null;
+
+		this.cur += 1;
+		return next;
+	},
+
+	peak: function (adv) {
+		if (adv === undefined)
+			adv = 1;
+
+		if (this.cur === null)
+			return null;
+
+		if (this.cur >= this.length)
+			return null;
+
+		return this.list[this.cur + adv] || null;
+	},
+
+	move: function (i) {
+		if (i < 0 || i >= this.length)
+			return null;
+
+		this.cur = i;
+		return this.current;
+	},
+
+	find: function (rangeIndex) {
+		for (var i = 0; i < this.length; i++) {
+			if (this.list[i].range[0] >= rangeIndex) {
+				return i;
+			}
 		}
-	});
 
-	return slice;
+		return -1;
+	},
+
+	getRange: function (range) {
+		var slice = [];
+
+		_.each(this.list, function (token) {
+			if (token.range[0] < range[0])
+				return;
+
+			if (token.range[1] <= range[1])
+				slice.push(token);
+		});
+
+		return new Tokens(slice);
+	}
 };
 
 _.each(["Punctuator", "Keyword"], function (name) {
@@ -158,5 +218,5 @@ _.each(["Punctuator", "Keyword"], function (name) {
 });
 
 exports.Report = Report;
-exports.getRange = getRange;
+exports.Tokens = Tokens;
 exports.ScopeStack = ScopeStack;

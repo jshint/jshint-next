@@ -42,20 +42,15 @@ exports.testMixin = function (test) {
 	test.done();
 };
 
-exports.getRange = function (test) {
+exports.testTokens = function (test) {
 	var code = fixtures.get("simple_file.js");
-	var tokens = linter.lint({ code: code }).tree.tokens;
+	var tokens = new utils.Tokens(linter.lint({ code: code }).tree.tokens);
+	var slice = tokens.getRange([ 0, 27 ]);
 
-	var slice = utils.getRange(tokens, [ 0, 27 ]);
 	test.equal(slice.length, 3);
-	test.equal(slice[0].value, "var");
-	test.equal(slice[1].value, "number");
-	test.equal(slice[2].value, "=");
-
-	slice = utils.getRange(tokens, [ 84, 84 ], 2);
-	test.equal(slice.length, 2);
-	test.equal(slice[0].value, ")");
-	test.equal(slice[1].value, ";");
+	test.equal(slice.current.value, "var");
+	test.equal(slice.next().value, "number");
+	test.equal(slice.next().value, "=");
 
 	test.done();
 };
