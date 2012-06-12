@@ -15,9 +15,7 @@ exports.testEsprimaErrors = function (test) {
 
 exports.testTrailingComma = function (test) {
 	runner(test)
-		.addError(2, "E001")
-		.addError(4, "E001")
-		.addError(9, "E001")
+		.addErrors([2, 4, 9], "E001")
 		.testFile("trailing.js");
 
 	test.done();
@@ -33,11 +31,7 @@ exports.testDunderIterator = function (test) {
 
 exports.testDunderProto = function (test) {
 	runner(test)
-		.addError(7, "E005")
-		.addError(8, "E005")
-		.addError(10, "E005")
-		.addError(29, "E005")
-		.addError(33, "E005")
+		.addErrors([7, 8, 10, 29, 33], "E005")
 		.testFile("proto.js");
 
 	test.done();
@@ -45,9 +39,7 @@ exports.testDunderProto = function (test) {
 
 exports.testMissingSemicolon = function (test) {
 	runner(test)
-		.addError(6, "E006")
-		.addError(29, "E006")
-		.addError(31, "E006")
+		.addErrors([6, 29, 31], "E006")
 		.testFile("asi.js");
 
 	test.done();
@@ -63,32 +55,16 @@ exports.testDebugger = function (test) {
 
 exports.testBitwiseOperators = function (test) {
 	runner(test)
-		.addError(5, "W001")
-		.addError(6, "W001")
-		.addError(7, "W001")
-		.addError(8, "W001")
-		.addError(9, "W001")
-		.addError(10, "W001")
-		.addError(11, "W001")
+		.addErrors([5, 6, 7, 8, 9, 10, 11], "W001")
 		.testFile("bitwise.js");
 
 	test.done();
 };
 
 exports.testUnsafeComparison = function (test) {
+	var lines = [2, 5, 8, 11, 14, 17, 28, 31, 34, 37, 40, 43];
 	runner(test)
-		.addError(2, "W002")
-		.addError(5, "W002")
-		.addError(8, "W002")
-		.addError(11, "W002")
-		.addError(14, "W002")
-		.addError(17, "W002")
-		.addError(28, "W002")
-		.addError(31, "W002")
-		.addError(34, "W002")
-		.addError(37, "W002")
-		.addError(40, "W002")
-		.addError(43, "W002")
+		.addErrors(lines, "W002")
 		.testFile("comparison.js");
 
 	test.done();
@@ -96,12 +72,7 @@ exports.testUnsafeComparison = function (test) {
 
 exports.testShadow = function (test) {
 	runner(test)
-		.addError(3, "W003")
-		.addError(4, "W003")
-		.addError(8, "W003")
-		.addError(12, "W003")
-		.addError(16, "W003")
-		.addError(17, "W003")
+		.addErrors([3, 4, 8, 12, 16, 17], "W003")
 		.testFile("shadow.js");
 
 	test.done();
