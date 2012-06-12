@@ -8,7 +8,7 @@ var runner = helpers.createRunner(__dirname, __filename);
 exports.testEsprimaErrors = function (test) {
 	runner(test)
 		.addError(3, "E002")
-		.testFile("esprima.js");
+		.testFile("esprima.js", {}, { greatPower: false });
 
 	test.done();
 };
@@ -30,9 +30,13 @@ exports.testDunderIterator = function (test) {
 };
 
 exports.testDunderProto = function (test) {
+	var globals = {
+		Error: false
+	};
+
 	runner(test)
 		.addErrors([7, 8, 10, 29, 33], "E005")
-		.testFile("proto.js");
+		.testFile("proto.js", {}, globals);
 
 	test.done();
 };
@@ -40,7 +44,7 @@ exports.testDunderProto = function (test) {
 exports.testMissingSemicolon = function (test) {
 	runner(test)
 		.addErrors([6, 29, 31], "E006")
-		.testFile("asi.js");
+		.testFile("asi.js", {}, { console: false });
 
 	test.done();
 };
@@ -73,7 +77,15 @@ exports.testUnsafeComparison = function (test) {
 exports.testShadow = function (test) {
 	runner(test)
 		.addErrors([3, 4, 8, 12, 16, 17], "W003")
-		.testFile("shadow.js");
+		.testFile("shadow.js", {}, { three: false });
+
+	test.done();
+};
+
+exports.testUndef = function (test) {
+	runner(test)
+		.addErrors([4, 7, 8, 18, 19, 22, 23, 27], "W004")
+		.testFile("undef.js");
 
 	test.done();
 };

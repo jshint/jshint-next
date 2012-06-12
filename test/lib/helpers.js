@@ -51,7 +51,7 @@ function createRunner(dirname, filename) {
 			},
 
 			test: function (source, options, globals) {
-				var retval = linter.lint({ code: source });
+				var retval = linter.lint({ code: source, predefined: globals });
 				var errors = retval.report.errors;
 
 				// If the linter didn't produce any errors and we don't

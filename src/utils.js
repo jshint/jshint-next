@@ -2,59 +2,110 @@
 
 var _ = require("underscore");
 
+function safe(name) {
+	if (name === "__proto__")
+		return "(__proto__)";
+	return name;
+}
+
+// ScopeStack stores all the environments we encounter while
+// traversing syntax trees. It also keeps track of all
+// variables defined and/or used in these environments.
+//
+// We use linked-list implementation of a stack. The first
+// element, representing global environment, doesn't have
+// a reference to its parent.
+//
+// runtimeOnly means that we can't tell if identifier
+// is a variable or a property by analysing the source. It
+// is true only within the `with` statement.
+
 function ScopeStack() {
-	this.stack  = [];
-	this.length = 0;
+	this.stack = [];
+	this.curid = null;
+
+	this.runtimeOnly = false;
 	this.push("(global)");
 }
 
 ScopeStack.prototype = {
-	push: function (name) {
-		this.stack.push({ name: name, vars: {} });
-		this.length += 1;
+	get current() {
+		if (this.curid === null)
+			return null;
+
+		return this.stack[this.curid];
 	},
+
+	get parent() {
+		if (this.curid === null)
+			return null;
+
+		var parid = this.current.parid;
+
+		if (parid === null)
+			return null;
+
+		return this.stack[parid];
+	},
+
+	// Push a new environment into the stack.
+
+	push: function (name) {
+		var curid = this.curid;
+		this.curid = this.stack.length;
+
+		this.stack.push({
+			parid: curid,
+			name:  name,
+			vars:  {},
+			uses:  {}
+		});
+	},
+
+	// Exit from the current environment. Even though
+	// this method is called `pop` it doesn't actually
+	// delete the environment--it simply jumps into the
+	// parent one.
 
 	pop: function () {
-		this.stack.pop();
-		this.length -= 1;
+		this.curid = this.current.parid;
 	},
 
-	isDefined: function (name) {
-		var cur = this.length - 1;
+	isDefined: function (name, env) {
+		env = env || this.current;
 
-		while (cur >= 0) {
-			if (_.has(this.stack[cur].vars, name))
+		while (env) {
+			if (_.has(env.vars, safe(name)))
 				return true;
 
-			cur -= 1;
+			env = this.stack[env.parid];
 		}
 
 		return false;
 	},
 
-	addVariable: function (opts) {
-		if (this.length < 1)
+	addUse: function (name, range) {
+		name = safe(name);
+
+		if (this.runtimeOnly)
 			return;
 
-		this.stack[this.length - 1].vars[opts.name] = {
+		if (this.current.uses[name] === undefined)
+			this.current.uses[name] = [range];
+		else
+			this.current.uses[name].push(range);
+	},
+
+	addVariable: function (opts) {
+		this.current.vars[safe(opts.name)] = {
 			writeable: opts.writeable || false
 		};
 	},
 
 	addGlobalVariable: function (opts) {
-		if (this.length < 1)
-			return;
-
-		this.stack[0].vars[opts.name] = {
+		this.stack[0].vars[safe(opts.name)] = {
 			writeable: opts.writeable || false
 		};
-	},
-
-	getCurrent: function () {
-		if (this.length < 1)
-			return;
-
-		return this.stack[this.length - 1];
 	}
 };
 

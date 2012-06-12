@@ -57,15 +57,13 @@ exports.testTokens = function (test) {
 
 exports.testScopeStack = function (test) {
 	var scope = new utils.ScopeStack();
-	test.equal(scope.length, 1);
-	test.equal(scope.getCurrent().name, "(global)");
+	test.equal(scope.current.name, "(global)");
 
 	scope.addVariable({ name: "weebly" });
 	test.ok(scope.isDefined("weebly"));
 
 	scope.push("(anon)");
-	test.equal(scope.length, 2);
-	test.equal(scope.getCurrent().name, "(anon)");
+	test.equal(scope.current.name, "(anon)");
 
 	scope.addVariable({ name: "wobly" });
 	test.ok(scope.isDefined("wobly"));
@@ -75,11 +73,13 @@ exports.testScopeStack = function (test) {
 	test.ok(scope.isDefined("stuff"));
 
 	scope.pop();
-	test.equal(scope.length, 1);
-	test.equal(scope.getCurrent().name, "(global)");
+	test.equal(scope.current.name, "(global)");
 	test.ok(scope.isDefined("weebly"));
 	test.ok(scope.isDefined("stuff"));
 	test.ok(!scope.isDefined("wobly"));
+
+	scope.addGlobalVariable({ name: "__proto__" });
+	test.ok(scope.isDefined("__proto__"));
 
 	test.done();
 };

@@ -16,7 +16,6 @@ function trailingComma(expr) {
 	}
 }
 
-
 // Check for properties named __iterator__. This is a special property
 // available only in browsers with JavaScript 1.7 implementation.
 
@@ -28,7 +27,6 @@ function dunderIterator(expr) {
 	}
 }
 
-
 // Check for properties named __proto__. This special property was
 // deprecated long time ago.
 
@@ -39,7 +37,6 @@ function dunderProto(expr) {
 		report.addError(constants.errors.DunderProto, prop.range);
 	}
 }
-
 
 // Check for missing semicolons but only when they have a potential
 // of breaking things due to automatic semicolon insertion.
@@ -69,6 +66,9 @@ function missingSemicolon(expr) {
 	}
 }
 
+// Catch cases where you put a new line after a `return` statement
+// by mistake.
+
 function missingReturnSemicolon(expr) {
 	var cur = tokens.move(tokens.find(expr.range[0]));
 	var next = tokens.peak();
@@ -95,6 +95,8 @@ function unexpectedDebugger(expr) {
 	report.addError(constants.errors.DebuggerStatement, expr.range);
 }
 
+// Disallow bitwise operators: they are slow in JavaScript and
+// more often than not are simply typoed logical operators.
 
 function bitwiseOperators(expr) {
 	var ops = {
@@ -111,6 +113,9 @@ function bitwiseOperators(expr) {
 		report.addError(constants.warnings.BitwiseOperator, expr.range);
 	}
 }
+
+// Complain about comparisons that can blow up because of type
+// coercion.
 
 function unsafeComparison(expr) {
 	function isUnsafe(el) {
@@ -139,9 +144,51 @@ function unsafeComparison(expr) {
 		report.addError(constants.warnings.UnsafeComparison, expr.right.range);
 }
 
+// Complain about variables defined twice.
+
 function redefinedVariables(name, range) {
 	if (scopes.isDefined(name))
 		report.addError(constants.warnings.RedefinedVariable, range);
+}
+
+// Check if identifier is a free variable and record its
+// use. Later in the code we'll use that to spot undefined
+// variables.
+
+function recordIdentifier(ident) {
+	var index = tokens.find(ident.range[0]);
+	var token, prev, next;
+
+	if (index > 0) {
+		token = tokens.move(index);
+		prev  = tokens.peak(-1);
+		next  = tokens.peak(1) || {};
+
+		// This identifier is a property key, not a free variable.
+
+		if (utils.isPunctuator(next, ":") && !utils.isPunctuator(prev, "?"))
+			return;
+
+		// This identifier is a property itself, not a free variable.
+
+		if (utils.isPunctuator(prev, "."))
+			return;
+
+		// Operators typeof and delete do not raise runtime errors
+		// even if the base object of a reference is null, so we don't
+		// need to display warnings in these cases.
+
+		if (utils.isKeyword(prev, "typeof") || utils.isKeyword(prev, "delete")) {
+
+			// Unless you're trying to subscript a null references. That
+			// will throw a runtime error.
+
+			if (!utils.isPunctuator(next, ".") && !utils.isPunctuator(next, "["))
+				return;
+		}
+	}
+
+	scopes.addUse(ident.name, ident.range);
 }
 
 // Walk the tree using recursive depth-first search and call
@@ -181,15 +228,14 @@ function parse(tree) {
 		break;
 	case "FunctionExpression":
 	case "FunctionDeclaration":
-		if (tree.id && tree.id.name) {
-			redefinedVariables(tree.id.name, tree.id.range);
-			scopes.addVariable({ name: tree.id.name });
-		}
-
 		_.each(tree.params, function (param, key) {
 			redefinedVariables(param.name, param.range);
 			scopes.addVariable({ name: param.name });
 		});
+		break;
+	case "Identifier":
+		recordIdentifier(tree);
+		break;
 	}
 
 	_.each(tree, function (val, key) {
@@ -201,14 +247,26 @@ function parse(tree) {
 
 		switch (val.type) {
 		case "FunctionDeclaration":
+			scopes.addVariable({ name: val.id.name });
 			scopes.push(val.id.name);
 			parse(val);
 			scopes.pop();
 			break;
 		case "FunctionExpression":
+			if (val.id && val.id.type === "Identifier")
+				scopes.addVariable({ name: val.id.name });
+
 			scopes.push("(anon)");
 			parse(val);
 			scopes.pop();
+			break;
+		case "WithStatement":
+			scopes.runtimeOnly = true;
+			parse(val);
+			scopes.runtimeOnly = false;
+			break;
+		case "Identifier":
+			parse(val);
 			break;
 		default:
 			parse(val);
@@ -237,5 +295,20 @@ exports.parse = function (opts) {
 	}
 
 	parse(program.body);
+
+	// Go over all stacks and find all variables that were used
+	// but never defined.
+
+	_.each(scopes.stack, function (env) {
+		_.each(env.uses, function (ranges, name) {
+			if (scopes.isDefined(name, env))
+				return;
+
+			_.each(ranges, function (range) {
+				report.addError(constants.warnings.UndefinedVariable, range);
+			});
+		});
+	});
+
 	return report;
 };

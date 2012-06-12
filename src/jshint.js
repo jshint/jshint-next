@@ -1,9 +1,11 @@
 "use strict";
 
-var parser  = require("esprima");
-var utils   = require("./utils.js");
-var reason  = require("./reason.js");
-var asherah = require("./asherah.js");
+var _         = require("underscore");
+var parser    = require("esprima");
+var utils     = require("./utils.js");
+var reason    = require("./reason.js");
+var asherah   = require("./asherah.js");
+var constants = require("./constants.js");
 
 var JSHINT = function (args) {
 	var report = new utils.Report(args.code);
@@ -14,6 +16,13 @@ var JSHINT = function (args) {
 		tokens:   true, // Include a list of all found tokens.
 		tolerant: true  // Don't break on non-fatal errors.
 	});
+
+	// Pre-populate globals array with reserved variables,
+	// standard ECMAScript globals and user-supplied globals.
+	var globals = _.extend({},
+		constants.reservedVars,
+		constants.ecmaIdentifiers,
+		args.predefined || {});
 
 	// Check provided JavaScript code using three modules:
 	//
@@ -28,9 +37,11 @@ var JSHINT = function (args) {
 	// the final report.
 
 	report.mixin(reason.parse({
-		tree: tree,
-		code: args.code
+		tree:       tree,
+		code:       args.code,
+		predefined: globals
 	}));
+
 	// report.mixin(asherah.parse(tree, args.code));
 
 	return {
