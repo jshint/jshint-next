@@ -32,18 +32,22 @@ ScopeStack.prototype = {
 		return false;
 	},
 
-	addVariable: function (name) {
+	addVariable: function (opts) {
 		if (this.length < 1)
 			return;
 
-		this.stack[this.length - 1].vars[name] = true;
+		this.stack[this.length - 1].vars[opts.name] = {
+			writeable: opts.writeable || false
+		};
 	},
 
-	addGlobalVariable: function (name) {
+	addGlobalVariable: function (opts) {
 		if (this.length < 1)
 			return;
 
-		this.stack[0].vars[name] = true;
+		this.stack[0].vars[opts.name] = {
+			writeable: opts.writeable || false
+		};
 	},
 
 	getCurrent: function () {

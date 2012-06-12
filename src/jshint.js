@@ -27,7 +27,10 @@ var JSHINT = function (args) {
 	// Each module returns its own report that then can be combined into
 	// the final report.
 
-	report.mixin(reason.parse(tree, args.code));
+	report.mixin(reason.parse({
+		tree: tree,
+		code: args.code
+	}));
 	// report.mixin(asherah.parse(tree, args.code));
 
 	return {

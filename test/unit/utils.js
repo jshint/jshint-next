@@ -60,18 +60,18 @@ exports.testScopeStack = function (test) {
 	test.equal(scope.length, 1);
 	test.equal(scope.getCurrent().name, "(global)");
 
-	scope.addVariable("weebly");
+	scope.addVariable({ name: "weebly" });
 	test.ok(scope.isDefined("weebly"));
 
 	scope.push("(anon)");
 	test.equal(scope.length, 2);
 	test.equal(scope.getCurrent().name, "(anon)");
 
-	scope.addVariable("wobly");
+	scope.addVariable({ name: "wobly" });
 	test.ok(scope.isDefined("wobly"));
 	test.ok(scope.isDefined("weebly"));
 
-	scope.addGlobalVariable("stuff");
+	scope.addGlobalVariable({ name: "stuff" });
 	test.ok(scope.isDefined("stuff"));
 
 	scope.pop();

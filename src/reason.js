@@ -177,18 +177,18 @@ function parse(tree) {
 		break;
 	case "VariableDeclarator":
 		redefinedVariables(tree.id.name, tree.id.range);
-		scopes.addVariable(tree.id.name);
+		scopes.addVariable({ name: tree.id.name });
 		break;
 	case "FunctionExpression":
 	case "FunctionDeclaration":
 		if (tree.id && tree.id.name) {
 			redefinedVariables(tree.id.name, tree.id.range);
-			scopes.addVariable(tree.id.name);
+			scopes.addVariable({ name: tree.id.name });
 		}
 
 		_.each(tree.params, function (param, key) {
 			redefinedVariables(param.name, param.range);
-			scopes.addVariable(param.name);
+			scopes.addVariable({ name: param.name });
 		});
 	}
 
@@ -216,11 +216,18 @@ function parse(tree) {
 	});
 }
 
-exports.parse = function (tree, source) {
-	report  = new utils.Report(source);
+exports.parse = function (opts) {
+	report  = new utils.Report(opts.code);
 	scopes  = new utils.ScopeStack();
-	program = tree;
-	tokens  = new utils.Tokens(tree.tokens);
+	program = opts.tree;
+	tokens  = new utils.Tokens(program.tokens);
+
+	_.each(opts.predefined || {}, function (writeable, name) {
+		scopes.addGlobalVariable({
+			name: name,
+			writeable: writeable
+		});
+	});
 
 	if (program.errors.length) {
 		program.errors.forEach(function (err) {
