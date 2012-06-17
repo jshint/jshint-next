@@ -49,7 +49,8 @@ var errors = [
 	[ "E005", "'__proto___' property is deprecated.", "DunderProto" ],
 	[ "E006", "Missing semicolon.", "MissingSemicolon" ],
 	[ "E007", "Unexpected debugger statement.", "DebuggerStatement" ],
-	[ "E008", "'arguments.callee' is prohibited in strict mode.", "CalleeStrictMode" ]
+	[ "E008", "'arguments.callee' is prohibited in strict mode.", "CalleeStrictMode" ],
+	[ "E009", "Undefined variable in strict mode.", "UndefinedVariableStrictMode" ]
 ];
 
 var warnings = [

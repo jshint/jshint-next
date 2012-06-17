@@ -382,6 +382,8 @@ exports.parse = function (opts) {
 				return;
 
 			_.each(ranges, function (range) {
+				if (scopes.isStrictMode(env))
+					return void report.addError(constants.errors.UndefinedVariableStrictMode, range);
 				report.addError(constants.warnings.UndefinedVariable, range);
 			});
 		});

@@ -85,6 +85,7 @@ exports.testShadow = function (test) {
 exports.testUndef = function (test) {
 	runner(test)
 		.addErrors([4, 7, 8, 18, 19, 22, 23, 27], "W004")
+		.addError(41, "E009")
 		.testFile("undef.js");
 
 	test.done();

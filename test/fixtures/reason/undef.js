@@ -35,3 +35,8 @@ function lateFn() {
 	fn(a);
 	var a;
 }
+
+function strictundef() {
+	"use strict";
+	zz();
+}
