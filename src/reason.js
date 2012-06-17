@@ -52,12 +52,12 @@ function missingSemicolon(expr) {
 	var prev, curLine, prevLine;
 
 	while (token !== null) {
-		if (utils.isPunctuator(token, "(") || utils.isPunctuator(token, "[")) {
+		if (token.isPunctuator("(") || token.isPunctuator("[")) {
 			prev = slice.peak(-1);
 			curLine = report.lineFromRange(token.range);
 			prevLine = report.lineFromRange(prev.range);
 
-			if (curLine !== prevLine && !utils.isPunctuator(prev, ";")) {
+			if (curLine !== prevLine && !prev.isPunctuator(";")) {
 				report.addError(constants.errors.MissingSemicolon, prev.range);
 			}
 		}
@@ -76,13 +76,13 @@ function missingReturnSemicolon(expr) {
 	if (report.lineFromRange(next.range) === report.lineFromRange(cur.range))
 		return;
 
-	if (next && utils.isPunctuator(next, ";"))
+	if (next && next.isPunctuator(";"))
 		return;
 
-	if (next && utils.isKeyword(next, "var"))
+	if (next && next.isKeyword("var"))
 		return;
 
-	if (next && utils.isKeyword(next, "case"))
+	if (next && next.isKeyword("case"))
 		return;
 
 	report.addError(constants.errors.MissingSemicolon, cur.range);
@@ -166,24 +166,24 @@ function recordIdentifier(ident) {
 
 		// This identifier is a property key, not a free variable.
 
-		if (utils.isPunctuator(next, ":") && !utils.isPunctuator(prev, "?"))
+		if (next.isPunctuator(":") && !prev.isPunctuator("?"))
 			return;
 
 		// This identifier is a property itself, not a free variable.
 
-		if (utils.isPunctuator(prev, "."))
+		if (prev.isPunctuator("."))
 			return;
 
 		// Operators typeof and delete do not raise runtime errors
 		// even if the base object of a reference is null, so we don't
 		// need to display warnings in these cases.
 
-		if (utils.isKeyword(prev, "typeof") || utils.isKeyword(prev, "delete")) {
+		if (prev.isKeyword("typeof") || prev.isKeyword("delete")) {
 
 			// Unless you're trying to subscript a null references. That
 			// will throw a runtime error.
 
-			if (!utils.isPunctuator(next, ".") && !utils.isPunctuator(next, "["))
+			if (!next.isPunctuator(".") && !next.isPunctuator("["))
 				return;
 		}
 	}
@@ -213,7 +213,7 @@ function checkArgumentsIdentifier(ident) {
 
 	tokens.move(index);
 
-	if (utils.isPunctuator(tokens.peak(-1), ".") && utils.isIdentifier(tokens.peak(-2), "arguments")) {
+	if (tokens.peak(-1).isPunctuator(".") && tokens.peak(-2).isIdentifier("arguments")) {
 		switch (ident.name) {
 		case "caller":
 			report.addError(constants.warnings.ArgumentsCaller, ident.range);
@@ -247,7 +247,7 @@ function checkArgumentsLiteral(literal) {
 
 	tokens.move(index);
 
-	if (utils.isPunctuator(tokens.peak(-1), "[") && utils.isIdentifier(tokens.peak(-2), "arguments")) {
+	if (tokens.peak(-1).isPunctuator("[") && tokens.peak(-2).isIdentifier("arguments")) {
 		switch (literal.value) {
 		case "caller":
 			report.addError(constants.warnings.ArgumentsCaller, literal.range);

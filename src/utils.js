@@ -200,7 +200,21 @@ Report.prototype = {
 	}
 };
 
+function Token(obj) {
+	_.extend(this, obj);
+}
+
+_.each(["Punctuator", "Keyword", "Identifier"], function (name) {
+	Token.prototype["is" + name] = function (value) {
+		return this.type === name && this.value === value;
+	};
+});
+
 function Tokens(list) {
+	list = _.map(list || [], function (obj) {
+		return new Token(obj);
+	});
+
 	this.list = list || [];
 	this.cur  = this.list.length > 0 ? 0 : null;
 }
@@ -280,12 +294,7 @@ Tokens.prototype = {
 	}
 };
 
-_.each(["Punctuator", "Keyword", "Identifier"], function (name) {
-	exports["is" + name] = function (token, value) {
-		return token.type === name && token.value === value;
-	};
-});
-
 exports.Report = Report;
+exports.Token  = Token;
 exports.Tokens = Tokens;
 exports.ScopeStack = ScopeStack;
