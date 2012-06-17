@@ -101,3 +101,11 @@ exports.testArguments = function (test) {
 
 	test.done();
 };
+
+exports.testExpressionsAsTests = function (test) {
+	runner(test)
+		.addErrors([8, 9, 10, 11], "W008")
+		.testFile("expr_in_test.js");
+
+	test.done();
+};

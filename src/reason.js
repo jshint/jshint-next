@@ -260,6 +260,14 @@ function checkArgumentsLiteral(literal) {
 	}
 }
 
+function checkConditional(expr) {
+	if (!expr.test)
+		return;
+
+	if (expr.test && expr.test.type === "AssignmentExpression")
+		report.addWarning("Boss", expr.range);
+}
+
 // Walk the tree using recursive depth-first search and call
 // appropriate lint functions when needed.
 
@@ -312,6 +320,11 @@ function parse(tree) {
 	case "Literal":
 		checkArgumentsLiteral(tree);
 		break;
+	case "ForStatement":
+	case "IfStatement":
+	case "WhileStatement":
+	case "DoWhileStatement":
+		checkConditional(tree);
 	}
 
 	_.each(tree, function (val, key) {

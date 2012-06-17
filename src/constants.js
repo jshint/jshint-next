@@ -60,7 +60,8 @@ var warnings = [
 	[ "W004", "Undefined variable.", "UndefinedVariable" ],
 	[ "W005", "Avoid arguments.caller.", "ArgumentsCaller" ],
 	[ "W006", "Avoid arguments.callee.", "ArgumentsCallee" ],
-	[ "W007", "Object arguments outside of a function body.", "GlobalArguments" ]
+	[ "W007", "Object arguments outside of a function body.", "GlobalArguments" ],
+	[ "W008", "Assignment instead of a conditionial expression. (typo?)", "Boss" ]
 ];
 
 exports.errors = {};
