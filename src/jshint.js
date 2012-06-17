@@ -19,10 +19,12 @@ var JSHINT = function (args) {
 
 	// Pre-populate globals array with reserved variables,
 	// standard ECMAScript globals and user-supplied globals.
-	var globals = _.extend({},
+	var globals = _.extend(
+		{},
 		constants.reservedVars,
 		constants.ecmaIdentifiers,
-		args.predefined || {});
+		args.predefined || {}
+	);
 
 	// Check provided JavaScript code using three modules:
 	//

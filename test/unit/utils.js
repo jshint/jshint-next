@@ -60,9 +60,11 @@ exports.testScopeStack = function (test) {
 	test.equal(scope.current.name, "(global)");
 
 	scope.addVariable({ name: "weebly" });
+	scope.current.strict = true;
 	test.ok(scope.isDefined("weebly"));
 
 	scope.push("(anon)");
+	test.ok(scope.isStrictMode());
 	test.equal(scope.current.name, "(anon)");
 
 	scope.addVariable({ name: "wobly" });

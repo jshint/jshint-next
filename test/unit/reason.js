@@ -89,3 +89,14 @@ exports.testUndef = function (test) {
 
 	test.done();
 };
+
+exports.testArguments = function (test) {
+	runner(test)
+		.addErrors([5, 17], "W006")
+		.addErrors([6, 18], "W005")
+		.addErrors([11, 12, 13, 14], "W007")
+		.addErrors([26, 27], "E008")
+		.testFile("arguments.js");
+
+	test.done();
+};

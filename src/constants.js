@@ -48,14 +48,18 @@ var errors = [
 	[ "E004", "'__iterator__' property is only available in JavaScript 1.7.", "DunderIterator" ],
 	[ "E005", "'__proto___' property is deprecated.", "DunderProto" ],
 	[ "E006", "Missing semicolon.", "MissingSemicolon" ],
-	[ "E007", "Unexpected debugger statement.", "DebuggerStatement" ]
+	[ "E007", "Unexpected debugger statement.", "DebuggerStatement" ],
+	[ "E008", "'arguments.callee' is prohibited in strict mode.", "CalleeStrictMode" ]
 ];
 
 var warnings = [
 	[ "W001", "Bitwise operator. (mistyped logical operator?)", "BitwiseOperator" ],
 	[ "W002", "Unsafe comparison.", "UnsafeComparison" ],
 	[ "W003", "Redefined variable.", "RedefinedVariable" ],
-	[ "W004", "Undefined variable.", "UndefinedVariable" ]
+	[ "W004", "Undefined variable.", "UndefinedVariable" ],
+	[ "W005", "Avoid arguments.caller.", "ArgumentsCaller" ],
+	[ "W006", "Avoid arguments.callee.", "ArgumentsCallee" ],
+	[ "W007", "Object arguments outside of a function body.", "GlobalArguments" ]
 ];
 
 exports.errors = {};

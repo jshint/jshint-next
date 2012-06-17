@@ -191,6 +191,76 @@ function recordIdentifier(ident) {
 	scopes.addUse(ident.name, ident.range);
 }
 
+// Look for arguments.callee and arguments.caller usage and warn about
+// them. In strict mode, instead of warning about arguments.callee, return
+// an error.
+
+function checkArgumentsIdentifier(ident) {
+	if (scopes.current.name === "(global)") {
+		if (ident.name === "arguments")
+			report.addError(constants.warnings.GlobalArguments, ident.range);
+
+		return;
+	}
+
+	if (ident.name !== "callee" && ident.name !== "caller")
+		return;
+
+	var index = tokens.find(ident.range[0]);
+
+	if (index < 1)
+		return;
+
+	tokens.move(index);
+
+	if (utils.isPunctuator(tokens.peak(-1), ".") && utils.isIdentifier(tokens.peak(-2), "arguments")) {
+		switch (ident.name) {
+		case "caller":
+			report.addError(constants.warnings.ArgumentsCaller, ident.range);
+			break;
+		case "callee":
+			if (scopes.isStrictMode())
+				report.addError(constants.errors.CalleeStrictMode, ident.range);
+			else
+				report.addError(constants.warnings.ArgumentsCallee, ident.range);
+		}
+	}
+}
+
+// Look for arguments["callee"] and arguments["caller"] usage and warn about
+// them. In strict mode, instead of warning about arguments["callee"], return
+// an error. Basically same as checkArgumentsIdentifier but for [] notation.
+//
+// It'd be nice to DRY this out later.
+
+function checkArgumentsLiteral(literal) {
+	if (scopes.current.name === "(global)")
+		return;
+
+	if (literal.value !== "callee" && literal.value !== "caller")
+		return;
+
+	var index = tokens.find(literal.range[0]);
+
+	if (index < 1)
+		return;
+
+	tokens.move(index);
+
+	if (utils.isPunctuator(tokens.peak(-1), "[") && utils.isIdentifier(tokens.peak(-2), "arguments")) {
+		switch (literal.value) {
+		case "caller":
+			report.addError(constants.warnings.ArgumentsCaller, literal.range);
+			break;
+		case "callee":
+			if (scopes.isStrictMode())
+				report.addError(constants.errors.CalleeStrictMode, literal.range);
+			else
+				report.addError(constants.warnings.ArgumentsCallee, literal.range);
+		}
+	}
+}
+
 // Walk the tree using recursive depth-first search and call
 // appropriate lint functions when needed.
 
@@ -207,6 +277,9 @@ function parse(tree) {
 		dunderProto(tree);
 		break;
 	case "ExpressionStatement":
+		if (tree.expression.type === "Literal" && tree.expression.value === "use strict")
+			scopes.current.strict = true;
+
 		missingSemicolon(tree);
 		break;
 	case "ReturnStatement":
@@ -235,6 +308,10 @@ function parse(tree) {
 		break;
 	case "Identifier":
 		recordIdentifier(tree);
+		checkArgumentsIdentifier(tree);
+		break;
+	case "Literal":
+		checkArgumentsLiteral(tree);
 		break;
 	}
 

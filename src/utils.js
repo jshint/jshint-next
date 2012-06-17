@@ -55,10 +55,11 @@ ScopeStack.prototype = {
 		this.curid = this.stack.length;
 
 		this.stack.push({
-			parid: curid,
-			name:  name,
-			vars:  {},
-			uses:  {}
+			parid:  curid,
+			name:   name,
+			strict: false,
+			vars:   {},
+			uses:   {}
 		});
 	},
 
@@ -76,6 +77,19 @@ ScopeStack.prototype = {
 
 		while (env) {
 			if (_.has(env.vars, safe(name)))
+				return true;
+
+			env = this.stack[env.parid];
+		}
+
+		return false;
+	},
+
+	isStrictMode: function (env) {
+		env = env || this.current;
+
+		while (env) {
+			if (env.strict)
 				return true;
 
 			env = this.stack[env.parid];
@@ -266,7 +280,7 @@ Tokens.prototype = {
 	}
 };
 
-_.each(["Punctuator", "Keyword"], function (name) {
+_.each(["Punctuator", "Keyword", "Identifier"], function (name) {
 	exports["is" + name] = function (token, value) {
 		return token.type === name && token.value === value;
 	};
