@@ -1,6 +1,8 @@
 "use strict";
 
 var _ = require("underscore");
+var warnings = require("./constants.js").warnings;
+var errors = require("./constants.js").errors;
 
 function safe(name) {
 	if (name === "__proto__")
@@ -138,34 +140,34 @@ Report.prototype = {
 		return lines.length || -1;
 	},
 
-	get errors() {
+	getMessages: function (cond) {
 		var ret = [];
-		var self = this;
+		cond = cond || function () { return true; };
 
-		_.each(self.messages, function (pool, line) {
+		_.each(this.messages, function (pool, line) {
 			_.each(pool, function (msg) {
-				if (msg.type === self.ERROR) {
+				if (cond(msg))
 					ret.push(msg);
-				}
 			});
 		});
 
 		return ret;
 	},
 
-	get warnings() {
-		var ret = [];
-		var self = this;
+	get errors() {
+		var type = this.ERROR;
 
-		_.each(self.messages, function (pool, line) {
-			_.each(pool, function (msg) {
-				if (msg.type === self.WARNING) {
-					ret.push(msg);
-				}
-			});
+		return this.getMessages(function (msg) {
+			return msg.type === type;
 		});
+	},
 
-		return ret;
+	get warnings() {
+		var type = this.WARNING;
+
+		return this.getMessages(function (msg) {
+			return msg.type === type;
+		});
 	},
 
 	mixin: function (report) {
@@ -179,23 +181,29 @@ Report.prototype = {
 		this.messages[line] = _.union(this.messages[line] || [], [obj]);
 	},
 
-	addWarning: function (message, loc) {
+	addWarning: function (label, loc) {
 		var line = _.isArray(loc) ? this.lineFromRange(loc) : loc;
+
+		if (!warnings[label])
+			throw new Error("Warning " + label + "is not defined.");
 
 		this.addMessage({
 			type: this.WARNING,
 			line: line,
-			data: message
+			data: warnings[label]
 		});
 	},
 
-	addError: function (message, loc) {
+	addError: function (label, loc) {
 		var line = _.isArray(loc) ? this.lineFromRange(loc) : loc;
+
+		if (!errors[label])
+			throw new Error("Error " + label + " is not defined.");
 
 		this.addMessage({
 			type: this.ERROR,
 			line: line,
-			data: message
+			data: errors[label]
 		});
 	}
 };

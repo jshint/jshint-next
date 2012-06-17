@@ -52,7 +52,7 @@ function createRunner(dirname, filename) {
 
 			test: function (source, options, globals) {
 				var retval = linter.lint({ code: source, predefined: globals });
-				var errors = retval.report.errors;
+				var errors = retval.report.getMessages();
 
 				// If the linter didn't produce any errors and we don't
 				// expect any, quietly return.

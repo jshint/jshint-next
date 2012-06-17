@@ -12,9 +12,9 @@ exports.testReport = function (test) {
 	test.equal(report.errors.length, 0);
 	test.equal(report.warnings.length, 0);
 
-	report.addError("Random Error", 1);
-	report.addError("Another Error", 2);
-	report.addWarning("Random Warning", 3);
+	report.addError("IllegalReturn", 1);
+	report.addError("DunderIterator", 2);
+	report.addWarning("UndefinedVariable", 3);
 
 	test.equal(_.size(report.messages), 3);
 	test.equal(report.errors.length, 2);
@@ -23,8 +23,18 @@ exports.testReport = function (test) {
 	test.deepEqual(report.errors[0], {
 		type: report.ERROR,
 		line: 1,
-		data: "Random Error"
+		data: {
+			code: "E003",
+			desc: "'return' can be used only within functions."
+		}
 	});
+
+	try {
+		report.addError("RandomError", 1);
+		test.ok(false);
+	} catch (err) {
+		test.ok(err !== undefined);
+	}
 
 	test.done();
 };
@@ -33,8 +43,8 @@ exports.testMixin = function (test) {
 	var firstReport = new utils.Report();
 	var secondReport = new utils.Report();
 
-	firstReport.addError("Random Error", 1);
-	secondReport.addError("Another Error", 1);
+	firstReport.addError("IllegalReturn", 1);
+	secondReport.addError("DunderIterator", 1);
 
 	firstReport.mixin(secondReport);
 	test.equal(firstReport.errors.length, 2);

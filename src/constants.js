@@ -79,12 +79,3 @@ warnings.forEach(function (msg) {
 		desc: msg[1]
 	};
 });
-
-exports.fromEsprima = function (msg) {
-	var mapping = {
-		"Illegal return statement": "IllegalReturn",
-		"Strict mode code may not include a with statement": "StrictModeWith"
-	};
-
-	return exports.errors[mapping[msg]];
-};

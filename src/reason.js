@@ -2,7 +2,6 @@
 
 var _ = require("underscore");
 var utils = require("./utils.js");
-var constants = require("./constants.js");
 
 var report, program, scopes, tokens;
 
@@ -12,7 +11,7 @@ function trailingComma(expr) {
 	var token = tokens.move(tokens.find(expr.range[1] - 2));
 
 	if (_.all([token.type === "Punctuator", token.value === "," ], _.identity)) {
-		report.addError(constants.errors.TrailingComma, token.range);
+		report.addError("TrailingComma", token.range);
 	}
 }
 
@@ -23,7 +22,7 @@ function dunderIterator(expr) {
 	var prop = expr.property;
 
 	if (prop.type === "Identifier" && prop.name === "__iterator__") {
-		report.addError(constants.errors.DunderIterator, prop.range);
+		report.addError("DunderIterator", prop.range);
 	}
 }
 
@@ -34,7 +33,7 @@ function dunderProto(expr) {
 	var prop = expr.property;
 
 	if (prop.type === "Identifier" && prop.name === "__proto__") {
-		report.addError(constants.errors.DunderProto, prop.range);
+		report.addError("DunderProto", prop.range);
 	}
 }
 
@@ -58,7 +57,7 @@ function missingSemicolon(expr) {
 			prevLine = report.lineFromRange(prev.range);
 
 			if (curLine !== prevLine && !prev.isPunctuator(";")) {
-				report.addError(constants.errors.MissingSemicolon, prev.range);
+				report.addError("MissingSemicolon", prev.range);
 			}
 		}
 
@@ -85,14 +84,14 @@ function missingReturnSemicolon(expr) {
 	if (next && next.isKeyword("case"))
 		return;
 
-	report.addError(constants.errors.MissingSemicolon, cur.range);
+	report.addError("MissingSemicolon", cur.range);
 }
 
 // Check for debugger statements. You really don't want them in your
 // production code.
 
 function unexpectedDebugger(expr) {
-	report.addError(constants.errors.DebuggerStatement, expr.range);
+	report.addError("DebuggerStatement", expr.range);
 }
 
 // Disallow bitwise operators: they are slow in JavaScript and
@@ -110,7 +109,7 @@ function bitwiseOperators(expr) {
 	};
 
 	if (expr.operator && ops[expr.operator] === true) {
-		report.addError(constants.warnings.BitwiseOperator, expr.range);
+		report.addWarning("BitwiseOperator", expr.range);
 	}
 }
 
@@ -138,17 +137,17 @@ function unsafeComparison(expr) {
 		return;
 
 	if (isUnsafe(expr.left))
-		report.addError(constants.warnings.UnsafeComparison, expr.left.range);
+		report.addWarning("UnsafeComparison", expr.left.range);
 
 	if (isUnsafe(expr.right))
-		report.addError(constants.warnings.UnsafeComparison, expr.right.range);
+		report.addWarning("UnsafeComparison", expr.right.range);
 }
 
 // Complain about variables defined twice.
 
 function redefinedVariables(name, range) {
 	if (scopes.isDefined(name))
-		report.addError(constants.warnings.RedefinedVariable, range);
+		report.addWarning("RedefinedVariable", range);
 }
 
 // Check if identifier is a free variable and record its
@@ -198,7 +197,7 @@ function recordIdentifier(ident) {
 function checkArgumentsIdentifier(ident) {
 	if (scopes.current.name === "(global)") {
 		if (ident.name === "arguments")
-			report.addError(constants.warnings.GlobalArguments, ident.range);
+			report.addWarning("GlobalArguments", ident.range);
 
 		return;
 	}
@@ -216,13 +215,13 @@ function checkArgumentsIdentifier(ident) {
 	if (tokens.peak(-1).isPunctuator(".") && tokens.peak(-2).isIdentifier("arguments")) {
 		switch (ident.name) {
 		case "caller":
-			report.addError(constants.warnings.ArgumentsCaller, ident.range);
+			report.addWarning("ArgumentsCaller", ident.range);
 			break;
 		case "callee":
 			if (scopes.isStrictMode())
-				report.addError(constants.errors.CalleeStrictMode, ident.range);
+				report.addError("CalleeStrictMode", ident.range);
 			else
-				report.addError(constants.warnings.ArgumentsCallee, ident.range);
+				report.addWarning("ArgumentsCallee", ident.range);
 		}
 	}
 }
@@ -250,13 +249,13 @@ function checkArgumentsLiteral(literal) {
 	if (tokens.peak(-1).isPunctuator("[") && tokens.peak(-2).isIdentifier("arguments")) {
 		switch (literal.value) {
 		case "caller":
-			report.addError(constants.warnings.ArgumentsCaller, literal.range);
+			report.addWarning("ArgumentsCaller", literal.range);
 			break;
 		case "callee":
 			if (scopes.isStrictMode())
-				report.addError(constants.errors.CalleeStrictMode, literal.range);
+				report.addError("CalleeStrictMode", literal.range);
 			else
-				report.addError(constants.warnings.ArgumentsCallee, literal.range);
+				report.addWarning("ArgumentsCallee", literal.range);
 		}
 	}
 }
@@ -364,10 +363,16 @@ exports.parse = function (opts) {
 		});
 	});
 
+
+	var mapping = {
+		"Illegal return statement": "IllegalReturn",
+		"Strict mode code may not include a with statement": "StrictModeWith"
+	};
+
 	if (program.errors.length) {
 		program.errors.forEach(function (err) {
 			var msg = err.message.split(": ")[1];
-			report.addError(constants.fromEsprima(msg), err.lineNumber);
+			report.addError(mapping[msg], err.lineNumber);
 		});
 	}
 
@@ -383,8 +388,8 @@ exports.parse = function (opts) {
 
 			_.each(ranges, function (range) {
 				if (scopes.isStrictMode(env))
-					return void report.addError(constants.errors.UndefinedVariableStrictMode, range);
-				report.addError(constants.warnings.UndefinedVariable, range);
+					return void report.addError("UndefinedVariableStrictMode", range);
+				report.addWarning("UndefinedVariable", range);
 			});
 		});
 	});
