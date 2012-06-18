@@ -1,5 +1,4 @@
 module.exports = function (grunt) {
-	// Project configuration.
 	grunt.initConfig({
 		lint: {
 			all: [ "src/**/*.js" ]
@@ -22,4 +21,13 @@ module.exports = function (grunt) {
 	});
 
 	grunt.registerTask("default", "lint test");
+
+	grunt.registerTask("browserify", "Builds a browserified copy of JSHint", function () {
+		var browserify = require("browserify");
+		var bundle = browserify({ debug: true });
+
+		bundle.addEntry("./src/jshint.js");
+		grunt.file.mkdir("./dist");
+		grunt.file.write("./dist/jshint.js", bundle.bundle());
+	});
 };

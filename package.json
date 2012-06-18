@@ -8,9 +8,10 @@
 	},
 
 	"devDependencies": {
-		"coveraje": "*",
-		"grunt":    "*",
-		"nodeunit": "*",
-		"jshint":   "*"
+		"browserify": "*",
+		"coveraje":   "*",
+		"grunt":      "*",
+		"nodeunit":   "*",
+		"jshint":     "*"
 	}
 }
