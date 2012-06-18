@@ -4,34 +4,59 @@ var _         = require("underscore");
 var parser    = require("esprima");
 var utils     = require("./utils.js");
 var reason    = require("./reason.js");
-var asherah   = require("./asherah.js");
 var constants = require("./constants.js");
+var Events    = require("./events.js").Events;
+
+// Converts errors spitted out by Esprima into JSHint errors.
+
+function esprima(linter) {
+	var mapping = {
+		"Illegal return statement": "IllegalReturn",
+		"Strict mode code may not include a with statement": "StrictModeWith"
+	};
+
+	_.each(linter.tree.errors, function (err) {
+		var msg = err.message.split(": ")[1];
+		linter.report.addError(mapping[msg], err.lineNumber);
+	});
+}
 
 function Linter(code) {
 	this.code    = code;
-	this.globals = {};
 	this.config  = {};
 	this.tree    = {};
-	this.events  = {};
+	this.scopes  = new utils.ScopeStack();
 	this.report  = new utils.Report(code);
+	this.tokens  = null;
+	this.modules = [];
+
+	this.addModule(esprima);
+	this.addModule(reason.register);
 
 	// Pre-populate globals array with reserved variables,
 	// standard ECMAScript globals and user-supplied globals.
 
-	_.extend(
-		this.globals,
-		constants.reservedVars,
-		constants.ecmaIdentifiers
-	);
+	this.setGlobals(constants.reservedVars);
+	this.setGlobals(constants.ecmaIdentifiers);
 }
 
 Linter.prototype = {
+	addModule: function (func) {
+		this.modules.push(func);
+	},
+
 	setGlobals: function (globals) {
-		_.extend(this.globals, globals);
+		var scopes = this.scopes;
+
+		_.each(globals, function (writeable, name) {
+			scopes.addGlobalVariable({ name: name, writeable: writeable });
+		});
 	},
 
 	parse: function () {
-		this.tree = parser.parse(this.code, {
+		var self = this;
+
+		self.tree = parser.parse(self.code, {
 			range:    true, // Include range-based location data.
 			loc:      true, // Include column-based location data.
 			comment:  true, // Include a list of all found code comments.
@@ -39,13 +64,66 @@ Linter.prototype = {
 			tolerant: true  // Don't break on non-fatal errors.
 		});
 
-		this.report.mixin(reason.parse({
-			tree: this.tree,
-			code: this.code,
-			predefined: this.globals
-		}));
+		self.tokens = new utils.Tokens(self.tree.tokens);
+
+		_.each(self.modules, function (func) {
+			func(self);
+		});
+
+		// Walk the tree using recursive* depth-first search and trigger
+		// appropriate events when needed.
+		//
+		// * - and potentially horribly inefficient.
+
+		function _parse(tree) {
+			if (tree.type)
+				self.trigger(tree.type, tree);
+
+			_.each(tree, function (val, key) {
+				if (val === null)
+					return;
+
+				if (!_.isObject(val) && !_.isArray(val))
+					return;
+
+				switch (val.type) {
+				case "ExpressionStatement":
+					if (val.expression.type === "Literal" && val.expression.value === "use strict")
+						self.scopes.current.strict = true;
+					_parse(val);
+					break;
+				case "FunctionDeclaration":
+					self.scopes.addVariable({ name: val.id.name });
+					self.scopes.push(val.id.name);
+					_parse(val);
+					self.scopes.pop();
+					break;
+				case "FunctionExpression":
+					if (val.id && val.id.type === "Identifier")
+						self.scopes.addVariable({ name: val.id.name });
+
+					self.scopes.push("(anon)");
+					_parse(val);
+					self.scopes.pop();
+					break;
+				case "WithStatement":
+					self.scopes.runtimeOnly = true;
+					_parse(val);
+					self.scopes.runtimeOnly = false;
+					break;
+				default:
+					_parse(val);
+				}
+			});
+		}
+
+		self.trigger("lint:start");
+		_parse(self.tree.body);
+		self.trigger("lint:end");
 	}
 };
+
+_.extend(Linter.prototype, Events);
 
 function JSHINT(args) {
 	var linter = new Linter(args.code);
@@ -56,7 +134,7 @@ function JSHINT(args) {
 		tree:   linter.tree,
 		report: linter.report
 	};
-};
+}
 
 exports.Linter = Linter;
 exports.lint   = JSHINT;
