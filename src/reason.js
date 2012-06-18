@@ -14,7 +14,7 @@ exports.register = function (linter) {
 		var token = tokens.move(tokens.find(expr.range[1] - 2));
 
 		if (token.isPunctuator(","))
-			report.addError("TrailingComma", token.range);
+			report.addError("E001", token.range);
 	});
 
 	// Check for properties named __iterator__. This is a special property
@@ -24,7 +24,7 @@ exports.register = function (linter) {
 		var prop = expr.property;
 
 		if (prop.type === "Identifier" && prop.name === "__iterator__")
-			report.addError("DunderIterator", prop.range);
+			report.addError("E004", prop.range);
 	});
 
 	// Check for properties named __proto__. This special property was
@@ -34,7 +34,7 @@ exports.register = function (linter) {
 		var prop = expr.property;
 
 		if (prop.type === "Identifier" && prop.name === "__proto__")
-			report.addError("DunderProto", prop.range);
+			report.addError("E005", prop.range);
 	});
 
 	// Check for missing semicolons but only when they have a potential
@@ -57,7 +57,7 @@ exports.register = function (linter) {
 				prevLine = report.lineFromRange(prev.range);
 
 				if (curLine !== prevLine && !prev.isPunctuator(";")) {
-					report.addError("MissingSemicolon", prev.range);
+					report.addError("E006", prev.range);
 				}
 			}
 
@@ -84,14 +84,14 @@ exports.register = function (linter) {
 		if (next && next.isKeyword("case"))
 			return;
 
-		report.addError("MissingSemicolon", cur.range);
+		report.addError("E006", cur.range);
 	});
 
 	// Check for debugger statements. You really don't want them in your
 	// production code.
 
 	linter.on("DebuggerStatement", function (expr) {
-		report.addError("DebuggerStatement", expr.range);
+		report.addError("E007", expr.range);
 	});
 
 	// Disallow bitwise operators: they are slow in JavaScript and
@@ -109,7 +109,7 @@ exports.register = function (linter) {
 		};
 
 		if (expr.operator && ops[expr.operator] === true)
-			report.addWarning("BitwiseOperator", expr.range);
+			report.addWarning("W001", expr.range);
 	});
 
 	// Complain about comparisons that can blow up because of type
@@ -136,17 +136,17 @@ exports.register = function (linter) {
 			return;
 
 		if (isUnsafe(expr.left))
-			report.addWarning("UnsafeComparison", expr.left.range);
+			report.addWarning("W002", expr.left.range);
 
 		if (isUnsafe(expr.right))
-			report.addWarning("UnsafeComparison", expr.right.range);
+			report.addWarning("W002", expr.right.range);
 	});
 
 	// Complain about variables defined twice.
 
 	function isRedefined(name, range) {
 		if (scopes.isDefined(name))
-			report.addWarning("RedefinedVariable", range);
+			report.addWarning("W003", range);
 	}
 
 	linter.on("VariableDeclarator", function (expr) {
@@ -208,7 +208,7 @@ exports.register = function (linter) {
 	linter.on("Identifier Literal", function (expr) {
 		if (scopes.current.name === "(global)") {
 			if (expr.type === "Identifier" && expr.name === "arguments")
-				report.addWarning("GlobalArguments", expr.range);
+				report.addWarning("W007", expr.range);
 
 			return;
 		}
@@ -230,13 +230,13 @@ exports.register = function (linter) {
 		if (tokens.peak(-1).isPunctuator(punc) && tokens.peak(-2).isIdentifier("arguments")) {
 			switch (name) {
 			case "caller":
-				report.addWarning("ArgumentsCaller", range);
+				report.addWarning("W005", range);
 				break;
 			case "callee":
 				if (scopes.isStrictMode())
-					report.addError("CalleeStrictMode", range);
+					report.addError("E008", range);
 				else
-					report.addWarning("ArgumentsCallee", range);
+					report.addWarning("W006", range);
 			}
 		}
 	});
@@ -244,7 +244,7 @@ exports.register = function (linter) {
 	// Warn when assignments are used instead of conditionals.
 	linter.on("ForStatement IfStatement WhileStatement DoWhileStatement", function (expr) {
 		if (expr.test && expr.test.type === "AssignmentExpression")
-			report.addWarning("Boss", expr.range);
+			report.addWarning("W008", expr.range);
 	});
 
 	// Go over all stacks and find all variables that were used but
@@ -261,8 +261,8 @@ exports.register = function (linter) {
 
 				_.each(ranges, function (range) {
 					if (scopes.isStrictMode(env))
-						return void linter.report.addError("UndefinedVariableStrictMode", range);
-					linter.report.addWarning("UndefinedVariable", range);
+						return void linter.report.addError("E009", range);
+					linter.report.addWarning("W004", range);
 				});
 			});
 		});

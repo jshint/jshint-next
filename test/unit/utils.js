@@ -12,9 +12,9 @@ exports.testReport = function (test) {
 	test.equal(report.errors.length, 0);
 	test.equal(report.warnings.length, 0);
 
-	report.addError("IllegalReturn", 1);
-	report.addError("DunderIterator", 2);
-	report.addWarning("UndefinedVariable", 3);
+	report.addError("E003", 1);
+	report.addError("E002", 2);
+	report.addWarning("W003", 3);
 
 	test.equal(_.size(report.messages), 3);
 	test.equal(report.errors.length, 2);
@@ -35,19 +35,6 @@ exports.testReport = function (test) {
 	} catch (err) {
 		test.ok(err !== undefined);
 	}
-
-	test.done();
-};
-
-exports.testMixin = function (test) {
-	var firstReport = new utils.Report();
-	var secondReport = new utils.Report();
-
-	firstReport.addError("IllegalReturn", 1);
-	secondReport.addError("DunderIterator", 1);
-
-	firstReport.mixin(secondReport);
-	test.equal(firstReport.errors.length, 2);
 
 	test.done();
 };

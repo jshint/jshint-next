@@ -10,14 +10,16 @@ var Events    = require("./events.js").Events;
 // Converts errors spitted out by Esprima into JSHint errors.
 
 function esprima(linter) {
-	var mapping = {
-		"Illegal return statement": "IllegalReturn",
-		"Strict mode code may not include a with statement": "StrictModeWith"
-	};
+	linter.on("lint:end", function () {
+		var mapping = {
+			"Illegal return statement": "E003",
+			"Strict mode code may not include a with statement": "E002"
+		};
 
-	_.each(linter.tree.errors, function (err) {
-		var msg = err.message.split(": ")[1];
-		linter.report.addError(mapping[msg], err.lineNumber);
+		_.each(linter.tree.errors, function (err) {
+			var msg = err.message.split(": ")[1];
+			linter.report.addError(mapping[msg], err.lineNumber);
+		});
 	});
 }
 

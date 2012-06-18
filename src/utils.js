@@ -170,12 +170,6 @@ Report.prototype = {
 		});
 	},
 
-	mixin: function (report) {
-		_.each(report.messages, _.bind(function (pool, line) {
-			this.messages[line] = _.union(this.messages[line] || [], pool);
-		}, this));
-	},
-
 	addMessage: function (obj) {
 		var line = obj.line;
 		this.messages[line] = _.union(this.messages[line] || [], [obj]);
