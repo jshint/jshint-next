@@ -7,6 +7,13 @@ var errors = require("./constants.js").errors;
 function safe(name) {
 	if (name === "__proto__")
 		return "(__proto__)";
+
+	var special = Object.getOwnPropertyNames(Object.prototype);
+	for (var i = 0; i < special.length; i++) {
+		if (name === special[i])
+			return "(" + name + ")";
+	}
+
 	return name;
 }
 

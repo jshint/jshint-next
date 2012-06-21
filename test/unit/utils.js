@@ -82,3 +82,14 @@ exports.testScopeStack = function (test) {
 
 	test.done();
 };
+
+exports.testSpecialVariables = function (test) {
+	var scope = new utils.ScopeStack();
+	scope.addUse("foo", [ 0, 1 ]);
+	scope.addUse("__proto__", [ 1, 2 ]);
+	scope.addUse("toString", [ 2, 3 ]);
+	scope.addUse("constructor", [ 3, 4 ]);
+
+	test.equal(_.size(scope.current.uses), 4);
+	test.done();
+};
