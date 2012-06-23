@@ -5,6 +5,19 @@ var linter  = require("../../src/jshint.js");
 var helpers = require("../lib/helpers.js");
 var runner = helpers.createRunner(__dirname, __filename);
 
+exports.testMaxErr = function (test) {
+	var lines = [];
+	for (var i = 5; i <= 55; i++) {
+		lines.push(i);
+	}
+
+	runner(test)
+		.addErrors(lines, "W001")
+		.testFile("fifty.js");
+
+	test.done();
+};
+
 exports.testEsprimaErrors = function (test) {
 	runner(test)
 		.addError(3, "E002")

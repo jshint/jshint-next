@@ -136,9 +136,10 @@ function Report(source) {
 	this.ERROR   = 1;
 	this.WARNING = 2;
 
+	this.length   = 0;
 	this.messages = {};
-	this.ranges = [];
-	this.source = source;
+	this.ranges   = [];
+	this.source   = source;
 }
 
 Report.prototype = {
@@ -180,6 +181,7 @@ Report.prototype = {
 	addMessage: function (obj) {
 		var line = obj.line;
 		this.messages[line] = _.union(this.messages[line] || [], [obj]);
+		this.length += 1;
 	},
 
 	addWarning: function (label, loc) {

@@ -7,6 +7,8 @@ var reason    = require("./reason.js");
 var constants = require("./constants.js");
 var Events    = require("./events.js").Events;
 
+var MAXERR = 50;
+
 // Converts errors spitted out by Esprima into JSHint errors.
 
 function esprima(linter) {
@@ -75,11 +77,14 @@ Linter.prototype = {
 		// Walk the tree using recursive* depth-first search and trigger
 		// appropriate events when needed.
 		//
-		// * - and potentially horribly inefficient.
+		// * - and probably horribly inefficient.
 
 		function _parse(tree) {
 			if (tree.type)
 				self.trigger(tree.type, tree);
+
+			if (self.report.length > MAXERR)
+				return;
 
 			_.each(tree, function (val, key) {
 				if (val === null)
