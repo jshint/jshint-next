@@ -4,6 +4,7 @@ var _         = require("underscore");
 var parser    = require("esprima");
 var utils     = require("./utils.js");
 var reason    = require("./reason.js");
+var regexp    = require("./regexp.js");
 var constants = require("./constants.js");
 var Events    = require("./events.js").Events;
 
@@ -36,6 +37,7 @@ function Linter(code) {
 
 	this.addModule(esprima);
 	this.addModule(reason.register);
+	this.addModule(regexp.register);
 
 	// Pre-populate globals array with reserved variables,
 	// standard ECMAScript globals and user-supplied globals.

@@ -17,6 +17,17 @@ function safe(name) {
 	return name;
 }
 
+function interpolate(string, data) {
+	return string.replace(/\{([^{}]*)\}/g, function (match, key) {
+		var repl = data[key];
+
+		if (typeof repl === 'string' || typeof repl === 'number')
+			return repl;
+
+		return match;
+	});
+}
+
 // ScopeStack stores all the environments we encounter while
 // traversing syntax trees. It also keeps track of all
 // variables defined and/or used in these environments.
@@ -184,29 +195,33 @@ Report.prototype = {
 		this.length += 1;
 	},
 
-	addWarning: function (label, loc) {
+	addWarning: function (label, loc, data) {
 		var line = _.isArray(loc) ? this.lineFromRange(loc) : loc;
+		var warn = warnings[label];
 
-		if (!warnings[label])
+		if (!warn)
 			throw new Error("Warning " + label + "is not defined.");
 
+		warn.desc = interpolate(warn.desc, data);
 		this.addMessage({
 			type: this.WARNING,
 			line: line,
-			data: warnings[label]
+			data: warn
 		});
 	},
 
-	addError: function (label, loc) {
+	addError: function (label, loc, data) {
 		var line = _.isArray(loc) ? this.lineFromRange(loc) : loc;
+		var err  = errors[label];
 
-		if (!errors[label])
+		if (!err)
 			throw new Error("Error " + label + " is not defined.");
 
+		err.desc = interpolate(err.desc, data);
 		this.addMessage({
 			type: this.ERROR,
 			line: line,
-			data: errors[label]
+			data: err
 		});
 	}
 };

@@ -63,7 +63,9 @@ var warnings = {
 	W005: "Avoid arguments.caller.",
 	W006: "Avoid arguments.callee.",
 	W007: "Object arguments outside of a function body.",
-	W008: "Assignment instead of a conditionial expression. (typo?)"
+	W008: "Assignment instead of a conditionial expression. (typo?)",
+	W009: "Insecure use of {sym} in a regular expression.",
+	W010: "Empty regular expression class."
 };
 
 exports.errors = {};
