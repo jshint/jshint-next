@@ -2,11 +2,11 @@
 
 var _         = require("underscore");
 var parser    = require("esprima");
+var events    = require("events");
 var utils     = require("./utils.js");
 var reason    = require("./reason.js");
 var regexp    = require("./regexp.js");
 var constants = require("./constants.js");
-var Events    = require("./events.js").Events;
 
 var MAXERR = 50;
 
@@ -34,6 +34,7 @@ function Linter(code) {
 	this.report  = new utils.Report(code);
 	this.tokens  = null;
 	this.modules = [];
+	this.emitter = new events.EventEmitter();
 
 	this.addModule(esprima);
 	this.addModule(reason.register);
@@ -47,6 +48,18 @@ function Linter(code) {
 }
 
 Linter.prototype = {
+	on: function (names, listener) {
+		var self = this;
+
+		names.split(" ").forEach(function (name) {
+			self.emitter.on(name, listener);
+		});
+	},
+
+	trigger: function () {
+		this.emitter.emit.apply(this.emitter, Array.prototype.slice.call(arguments));
+	},
+
 	addModule: function (func) {
 		this.modules.push(func);
 	},
@@ -131,8 +144,6 @@ Linter.prototype = {
 		self.trigger("lint:end");
 	}
 };
-
-_.extend(Linter.prototype, Events);
 
 function JSHINT(args) {
 	var linter = new Linter(args.code);

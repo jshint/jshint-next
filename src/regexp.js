@@ -1,12 +1,12 @@
 "use strict";
 
-var _ = require("underscore");
-var utils = require("./utils.js");
-var Events = require("./events.js").Events;
+var _      = require("underscore");
+var events = require("events");
 
 function Tokens(exp) {
-	this.exp   = exp;
-	this.pos   = 0;
+	this.exp = exp;
+	this.pos = 0;
+	this.emitter = new events.EventEmitter();
 }
 
 Tokens.prototype = {
@@ -31,8 +31,6 @@ Tokens.prototype = {
 	}
 };
 
-_.extend(Tokens.prototype, Events);
-
 exports.register = function (linter) {
 	var report = linter.report;
 
@@ -47,7 +45,7 @@ exports.register = function (linter) {
 
 		tokens = new Tokens(value[1]);
 
-		tokens.on("[", function () {
+		tokens.emitter.on("[", function () {
 			tokens.next();
 
 			if (tokens.current === "^") {
@@ -60,14 +58,14 @@ exports.register = function (linter) {
 			}
 		});
 
-		tokens.on(".", function () {
+		tokens.emitter.on(".", function () {
 			if (tokens.peak(-1) !== "\\") {
 				report.addWarning("W009", literal.range, { sym: tokens.current });
 			}
 		});
 
 		while (tokens.current) {
-			tokens.trigger(tokens.current);
+			tokens.emitter.emit(tokens.current);
 			tokens.next();
 		}
 	});
