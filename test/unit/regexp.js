@@ -30,3 +30,12 @@ exports.testEmptyClass = function (test) {
 
 	test.done();
 };
+
+exports.testDashes = function (test) {
+	runner(test)
+		.addErrors([ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ], "W011")
+		.addErrors([ 9, 10 ], "W009")
+		.testFile("dashes.js");
+
+	test.done();
+};
