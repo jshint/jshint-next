@@ -1,6 +1,7 @@
 var _ = require("underscore");
 var assert = require("assert");
 var fs = require("fs");
+var path = require("path");
 var linter = require("../../src/jshint.js");
 
 // Returns contents of a fixture.
@@ -16,11 +17,10 @@ function Fixtures(dirname, filename) {
 Fixtures.prototype.get = function (name) {
 	var dir, stream;
 
-	dir = this.filename.split("/");
-	dir = dir[dir.length - 1].replace(".js", "");
-	stream = fs.readFileSync(this.dirname + "/../fixtures/" + dir + "/" + name);
+	dir = path.basename(this.filename).replace(".js", "");
+	stream = fs.readFileSync(path.resolve(this.dirname, "..", "fixtures", dir, name));
 
-	return stream.toString();
+	return stream.toString().replace(/\r\n/g, "\n");
 };
 
 // A test helper designed specifically for JSHint. It allows us to write
