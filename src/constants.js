@@ -66,7 +66,8 @@ var warnings = {
 	W008: "Assignment instead of a conditionial expression. (typo?)",
 	W009: "Insecure use of {sym} in a regular expression.",
 	W010: "Empty regular expression class.",
-	W011: "Unescaped {sym} in a regular expression."
+	W011: "Unescaped {sym} in a regular expression.",
+	W012: "Don't extend native objects."
 };
 
 exports.errors = {};

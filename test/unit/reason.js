@@ -122,3 +122,11 @@ exports.testExpressionsAsTests = function (test) {
 
 	test.done();
 };
+
+exports.testNative = function (test) {
+	runner(test)
+		.addErrors([2, 5, 8], "W012")
+		.testFile("native.js");
+
+	test.done();
+};
