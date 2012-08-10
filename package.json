@@ -10,7 +10,8 @@
 
 	"dependencies": {
 		"esprima": "*",
-		"underscore": "*"
+		"underscore": "*",
+		"peakle": "*"
 	},
 
 	"devDependencies": {

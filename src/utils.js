@@ -1,6 +1,8 @@
 "use strict";
 
 var _ = require("underscore");
+var util = require("util");
+var Peakle = require("peakle").Peakle;
 var warnings = require("./constants.js").warnings;
 var errors = require("./constants.js").errors;
 
@@ -243,12 +245,12 @@ _.each(["Punctuator", "Keyword", "Identifier"], function (name) {
 
 function Tokens(list) {
 	var self = this;
+	Peakle.call(self, list);
 
 	// A hash-table to make tokens lookup by their starting
 	// position cheaper (see Tokens.find for more info).
 	self.byStart = {};
 
-	self.cur  = list.length > 0 ? 0 : null;
 	self.list = _.map(list || [], function (obj, i) {
 		var token = new Token(obj);
 		self.byStart[token.range[0]] = i;
@@ -256,110 +258,61 @@ function Tokens(list) {
 	});
 }
 
-Tokens.prototype = {
-	get length() {
-		return this.list.length;
-	},
+util.inherits(Tokens, Peakle);
 
-	get current() {
-		return this.peak(0);
-	},
+Tokens.prototype.find = function (rangeIndex) {
+	// First try to lookup our token in byStart in
+	// case this index is the starting point for the token.
 
-	prev: function () {
-		var prev = this.peak(-1);
+	var index = this.byStart[rangeIndex];
 
-		if (prev === null)
-			return null;
+	if (index)
+		return index;
 
-		this.cur -= 1;
-		return prev;
-	},
+	// If we could find it, step back, token by token
+	// until we find one that starts before the one we're
+	// looking for,
 
-	next: function () {
-		var next = this.peak();
+	var cur = rangeIndex - 1;
 
-		if (next === null)
-			return null;
+	do {
+		index = this.byStart[cur];
+		cur   = cur - 1;
+	} while (index === undefined && cur > 0);
 
-		this.cur += 1;
-		return next;
-	},
+	// If we're in the beginning and still nothing--return.
 
-	peak: function (adv) {
-		if (adv === undefined)
-			adv = 1;
-
-		if (this.cur === null)
-			return null;
-
-		if (this.cur >= this.length)
-			return null;
-
-		return this.list[this.cur + adv] || null;
-	},
-
-	move: function (i) {
-		if (i < 0 || i >= this.length)
-			return null;
-
-		this.cur = i;
-		return this.current;
-	},
-
-	find: function (rangeIndex) {
-		// First try to lookup our token in byStart in
-		// case this index is the starting point for the token.
-
-		var index = this.byStart[rangeIndex];
-
-		if (index)
-			return index;
-
-		// If we could find it, step back, token by token
-		// until we find one that starts before the one we're
-		// looking for,
-
-		var cur = rangeIndex - 1;
-
-		do {
-			index = this.byStart[cur];
-			cur   = cur - 1;
-		} while (index === undefined && cur > 0);
-
-		// If we're in the beginning and still nothing--return.
-
-		if (index === undefined)
-			return -1;
-
-		// Otherwise go in a slow O(N) loop looking for our token.
-
-		for (var i = index; i < this.length; i++) {
-			if (this.list[i].range[0] >= rangeIndex)
-				return i;
-		}
-
+	if (index === undefined)
 		return -1;
-	},
 
-	getRange: function (range) {
-		var slice  = [];
-		var length = this.list.length;
-		var token;
+	// Otherwise go in a slow O(N) loop looking for our token.
 
-		for (var i = this.byStart[range[0]] || 0; i < length; i++) {
-			token = this.list[i];
-
-			if (token.range[0] < range[0])
-				continue;
-
-			if (token.range[1] <= range[1])
-				slice.push(token);
-			else
-				break;
-		}
-
-		return new Tokens(slice);
+	for (var i = index; i < this.length; i++) {
+		if (this.list[i].range[0] >= rangeIndex)
+			return i;
 	}
+
+	return -1;
+};
+
+Tokens.prototype.getRange = function (range) {
+	var slice  = [];
+	var length = this.list.length;
+	var token;
+
+	for (var i = this.byStart[range[0]] || 0; i < length; i++) {
+		token = this.list[i];
+
+		if (token.range[0] < range[0])
+			continue;
+
+		if (token.range[1] <= range[1])
+			slice.push(token);
+		else
+			break;
+	}
+
+	return new Tokens(slice);
 };
 
 exports.Report = Report;
