@@ -40,3 +40,7 @@ var c = "1"
 
 function foobar() {}
 (function () {})()
+
+a = 2
++b
+*c

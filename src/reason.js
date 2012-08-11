@@ -52,7 +52,7 @@ exports.register = function (linter) {
 		var prev, curLine, prevLine;
 
 		while (token !== null) {
-			if (token.isPunctuator("(") || token.isPunctuator("[")) {
+			if (token.isPunctuator(["(", "["])) {
 				prev = slice.peak(-1);
 				curLine = report.lineFromRange(token.range);
 				prevLine = report.lineFromRange(prev.range);
@@ -64,6 +64,16 @@ exports.register = function (linter) {
 
 			token = slice.next();
 		}
+	});
+
+	linter.on("BinaryExpression", function (expr) {
+		var op = expr.operator;
+
+		if (op !== "+" && op !== "*" && op !== "/")
+			return;
+
+		if (expr.left.loc.end.line < expr.right.loc.start.line)
+			report.addError("E006", expr.range);
 	});
 
 	// Catch cases where you put a new line after a `return` statement
@@ -173,7 +183,7 @@ exports.register = function (linter) {
 		if (index > 0) {
 			token = tokens.move(index);
 			prev  = tokens.peak(-1);
-			next  = tokens.peak(1) || {};
+			next  = tokens.peak(1) || { isPunctuator: function () { return false; } };
 
 			// This identifier is a property key, not a free variable.
 

@@ -231,8 +231,13 @@ function Token(obj) {
 }
 
 _.each(["Punctuator", "Keyword", "Identifier"], function (name) {
-	Token.prototype["is" + name] = function (value) {
-		return this.type === name && this.value === value;
+	Token.prototype["is" + name] = function (values) {
+		if (!Array.isArray(values))
+			values = [ values ];
+
+		return _.any(values, _.bind(function (value) {
+			return this.type === name && this.value === value;
+		}, this));
 	};
 });
 
