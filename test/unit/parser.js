@@ -41,3 +41,42 @@ exports.testTokens = function (test) {
 	test.deepEqual(linter.lint({ code: code }).tree.tokens, tokens);
 	test.done();
 };
+
+exports.testComments = function (test) {
+	test.expect(8);
+
+	var linterObj = new linter.Linter(fixtures.get("comments.js"));
+	var addIgnore = linterObj.scopes.addIgnore;
+	var addSwitch = linterObj.scopes.addSwitch;
+
+	var ignores = [
+		[ "main", "W001" ],
+		[ "(anon)", "E001" ]
+	];
+
+	var switches = [
+		[ "(global)", "var" ],
+		[ "main", "strict" ]
+	];
+
+	linterObj.scopes.addIgnore = function (code) {
+		var exp = ignores.shift();
+		test.equal(linterObj.scopes.current.name, exp[0]);
+		test.equal(code, exp[1]);
+		addIgnore.call(linterObj.scopes, code);
+	};
+
+	linterObj.scopes.addSwitch = function (name) {
+		var exp = switches.shift();
+		test.equal(linterObj.scopes.current.name, exp[0]);
+		test.equal(name, exp[1]);
+		addSwitch.call(linterObj.scopes, name);
+	};
+
+	linterObj.parse();
+
+	linterObj.scopes.addIgnore = addIgnore;
+	linterObj.scopes.addSwitch = addSwitch;
+
+	test.done();
+};

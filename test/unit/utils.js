@@ -57,16 +57,25 @@ exports.testScopeStack = function (test) {
 	test.equal(scope.current.name, "(global)");
 
 	scope.addVariable({ name: "weebly" });
+	scope.addSwitch("strict");
+	scope.addIgnore("W002");
 	scope.current.strict = true;
 	test.ok(scope.isDefined("weebly"));
+	test.ok(scope.isSwitchEnabled("strict"));
+	test.ok(scope.isMessageIgnored("W002"));
+	test.ok(!scope.isSwitchEnabled("var"));
+	test.ok(!scope.isMessageIgnored("E001"));
 
 	scope.push("(anon)");
 	test.ok(scope.isStrictMode());
 	test.equal(scope.current.name, "(anon)");
 
 	scope.addVariable({ name: "wobly" });
+	scope.addSwitch("var");
 	test.ok(scope.isDefined("wobly"));
 	test.ok(scope.isDefined("weebly"));
+	test.ok(scope.isSwitchEnabled("var"));
+	test.ok(scope.isSwitchEnabled("strict"));
 
 	scope.addGlobalVariable({ name: "stuff" });
 	test.ok(scope.isDefined("stuff"));
@@ -76,6 +85,8 @@ exports.testScopeStack = function (test) {
 	test.ok(scope.isDefined("weebly"));
 	test.ok(scope.isDefined("stuff"));
 	test.ok(!scope.isDefined("wobly"));
+	test.ok(!scope.isSwitchEnabled("var"));
+	test.ok(scope.isSwitchEnabled("strict"));
 
 	scope.addGlobalVariable({ name: "__proto__" });
 	test.ok(scope.isDefined("__proto__"));
@@ -91,5 +102,25 @@ exports.testSpecialVariables = function (test) {
 	scope.addUse("constructor", [ 3, 4 ]);
 
 	test.equal(_.size(scope.current.uses), 4);
+	test.done();
+};
+
+exports.testParseComment = function (test) {
+	var com = utils.parseComment("TODO: Write more programs.");
+	test.equal(com.type, "text");
+	test.equal(com.value, "TODO: Write more programs.");
+
+	com = utils.parseComment("jshint:sup unused");
+	test.equal(com.type, "text");
+	test.equal(com.value, "jshint:sup unused");
+
+	com = utils.parseComment("jshint:set var, strict");
+	test.equal(com.type, "set");
+	test.deepEqual(com.value, ["var", "strict"]);
+
+	com = utils.parseComment(" jshint:ignore W001, E002  ");
+	test.equal(com.type, "ignore");
+	test.deepEqual(com.value, ["W001", "E002"]);
+
 	test.done();
 };

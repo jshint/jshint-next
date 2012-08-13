@@ -77,11 +77,13 @@ ScopeStack.prototype = {
 		this.curid = this.stack.length;
 
 		this.stack.push({
-			parid:  curid,
-			name:   name,
-			strict: false,
-			vars:   {},
-			uses:   {}
+			parid:    curid,
+			name:     name,
+			strict:   false,
+			switches: {},
+			ignores:  {},
+			vars:     {},
+			uses:     {}
 		});
 	},
 
@@ -94,11 +96,11 @@ ScopeStack.prototype = {
 		this.curid = this.current.parid;
 	},
 
-	isDefined: function (name, env) {
+	any: function (cond, env) {
 		env = env || this.current;
 
 		while (env) {
-			if (_.has(env.vars, safe(name)))
+			if (cond.call(env))
 				return true;
 
 			env = this.stack[env.parid];
@@ -107,17 +109,20 @@ ScopeStack.prototype = {
 		return false;
 	},
 
+	isDefined: function (name, env) {
+		return this.any(function () { return _.has(this.vars, safe(name)); }, env);
+	},
+
 	isStrictMode: function (env) {
-		env = env || this.current;
+		return this.any(function () { return this.strict; }, env);
+	},
 
-		while (env) {
-			if (env.strict)
-				return true;
+	isSwitchEnabled: function (name, env) {
+		return this.any(function () { return this.switches[name]; }, env);
+	},
 
-			env = this.stack[env.parid];
-		}
-
-		return false;
+	isMessageIgnored: function (code, env) {
+		return this.any(function () { return this.ignores[code]; }, env);
 	},
 
 	addUse: function (name, range) {
@@ -142,6 +147,14 @@ ScopeStack.prototype = {
 		this.stack[0].vars[safe(opts.name)] = {
 			writeable: opts.writeable || false
 		};
+	},
+
+	addSwitch: function (name) {
+		this.current.switches[name] = true;
+	},
+
+	addIgnore: function (name) {
+		this.current.ignores[name] = true;
 	}
 };
 
@@ -237,9 +250,9 @@ _.each(["Punctuator", "Keyword", "Identifier"], function (name) {
 		if (!Array.isArray(values))
 			values = [ values ];
 
-		return _.any(values, _.bind(function (value) {
+		return values.some(function (value) {
 			return this.type === name && this.value === value;
-		}, this));
+		}, this);
 	};
 });
 
@@ -315,7 +328,34 @@ Tokens.prototype.getRange = function (range) {
 	return new Tokens(slice);
 };
 
+var commentsCache = {};
+var commentsTypes = { "set": true, "ignore": true };
+
+function parseComment(text) {
+	var parts  = text.trim().split(" ");
+	var defval = { type: "text", value: text };
+	var values = [];
+	var head, body;
+
+	if (parts.length === 0)
+		return defval;
+
+	head = parts[0].split(":");
+	if (head[0] !== "jshint" || commentsTypes[head[1]] !== true)
+		return defval;
+
+	body = parts.slice(1).join(" ").split(",").map(function (s) {
+		return s.trim();
+	});
+
+	return {
+		type:  head[1],
+		value: body
+	};
+}
+
 exports.Report = Report;
 exports.Token  = Token;
 exports.Tokens = Tokens;
 exports.ScopeStack = ScopeStack;
+exports.parseComment = parseComment;

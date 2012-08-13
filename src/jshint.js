@@ -85,11 +85,33 @@ Linter.prototype = {
 		});
 
 		self.tokens = new utils.Tokens(self.tree.tokens);
-		self.comments = new peakle.Peakle(self.tree.comments);
 
 		_.each(self.modules, function (func) {
 			func(self);
 		});
+
+		function _parseComments(from, to) {
+			var slice = self.tree.comments.filter(function (comment) {
+				return comment.range[0] >= from && comment.range[1] <= to;
+			});
+
+			slice.forEach(function (comment) {
+				comment = utils.parseComment(comment.value);
+
+				switch (comment.type) {
+				case "set":
+					comment.value.forEach(function (name) {
+						self.scopes.addSwitch(name);
+					});
+					break;
+				case "ignore":
+					comment.value.forEach(function (code) {
+						self.scopes.addIgnore(code);
+					});
+					break;
+				}
+			});
+		}
 
 		// Walk the tree using recursive* depth-first search and trigger
 		// appropriate events when needed.
@@ -119,14 +141,23 @@ Linter.prototype = {
 				case "FunctionDeclaration":
 					self.scopes.addVariable({ name: val.id.name });
 					self.scopes.push(val.id.name);
+
+					// If this function is not empty, parse its leading comments (if any).
+					if (val.body.type === "BlockStatement" && val.body.body.length > 0)
+						_parseComments(val.range[0], val.body.body[0].range[0]);
+
 					_parse(val);
 					self.scopes.pop();
 					break;
 				case "FunctionExpression":
 					if (val.id && val.id.type === "Identifier")
 						self.scopes.addVariable({ name: val.id.name });
-
 					self.scopes.push("(anon)");
+
+					// If this function is not empty, parse its leading comments (if any).
+					if (val.body.type === "BlockStatement" && val.body.body.length > 0)
+						_parseComments(val.range[0], val.body.body[0].range[0]);
+
 					_parse(val);
 					self.scopes.pop();
 					break;
@@ -142,6 +173,7 @@ Linter.prototype = {
 		}
 
 		self.trigger("lint:start");
+		_parseComments(0, self.tree.range[0]);
 		_parse(self.tree.body);
 		self.trigger("lint:end");
 	}
