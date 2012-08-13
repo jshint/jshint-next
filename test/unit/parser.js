@@ -23,7 +23,7 @@ exports.testTree = function (test) {
 	test.equal(tree.body[2].expression.callee.name, "add");
 	test.equal(tree.comments[0].type, "Block");
 	test.equal(tree.comments[0].value, " [linter] ");
-	test.deepEqual(tree.comments[0].range, [ 0, 13 ]);
+	test.deepEqual(tree.comments[0].range, [ 0, 14 ]);
 
 	test.done();
 };

@@ -12,7 +12,7 @@ exports.register = function (linter) {
 	// Check for trailing commas in arrays and objects.
 
 	linter.on("ArrayExpression ObjectExpression", function (expr) {
-		var token = tokens.move(tokens.find(expr.range[1] - 2));
+		var token = tokens.move(tokens.find(expr.range[1] - 3));
 
 		if (token.isPunctuator(","))
 			report.addError("E001", token.range);

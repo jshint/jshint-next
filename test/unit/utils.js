@@ -42,7 +42,7 @@ exports.testReport = function (test) {
 exports.testTokens = function (test) {
 	var code = fixtures.get("simple_file.js");
 	var tokens = new utils.Tokens(linter.lint({ code: code }).tree.tokens);
-	var slice = tokens.getRange([ 0, 27 ]);
+	var slice = tokens.getRange([ 0, 28 ]);
 
 	test.equal(slice.length, 3);
 	test.equal(slice.current.value, "var");

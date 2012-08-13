@@ -9,7 +9,7 @@
 	},
 
 	"dependencies": {
-		"esprima": "*",
+		"esprima": "https://github.com/ariya/esprima/tarball/master",
 		"underscore": "*",
 		"peakle": "*"
 	},
