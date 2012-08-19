@@ -77,7 +77,7 @@ module.exports = function (grunt) {
 		}
 
 		var c = coveraje.cover(
-			"var jshint = require(require('path').join('" + __dirname + "', 'src', 'jshint.js'));",
+			"var jshint = require(require('path').join('" + __dirname.replace(/\\/g, "\\\\") + "', 'src', 'jshint.js'));",
 			tests,
 			{
 				useServer: useServer,
